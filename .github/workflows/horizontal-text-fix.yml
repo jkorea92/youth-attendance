@@ -1,0 +1,31 @@
+name: Apply horizontal text fix
+
+on:
+  push:
+    paths:
+      - 'tools/apply-horizontal-text.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply horizontal text fix
+        run: python3 tools/apply-horizontal-text.py
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- index.html app-v4.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html app-v4.html
+          git commit -m "Keep Korean text horizontal on mobile"
+          git push
