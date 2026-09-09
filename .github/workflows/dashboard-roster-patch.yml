@@ -3,6 +3,7 @@ name: Patch dashboard roster
 on:
   push:
     paths:
+      - 'patch_dashboard_roster.py'
       - '.github/workflows/dashboard-roster-patch.yml'
   workflow_dispatch:
 
@@ -16,58 +17,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Add dashboard member rosters
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          p = Path('app-v4.html')
-          s = p.read_text(encoding='utf-8')
-
-          roster_css = '''
-          .roster{margin-top:13px;border-top:1px solid var(--line);padding-top:10px}.roster summary{cursor:pointer;font-size:12px;font-weight:900;color:#344054;user-select:none}.roster-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}.roster-group{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff;min-height:68px}.roster-title{font-size:11px;font-weight:900;margin-bottom:7px}.roster-title.p{color:var(--green)}.roster-title.l{color:var(--amber)}.roster-title.a{color:var(--red)}.roster-title.x{color:var(--purple)}.roster-title.m{color:#667085}.name-list{display:flex;flex-wrap:wrap;gap:5px}.name-chip{font-size:11px;padding:4px 7px;border-radius:999px;background:#f2f4f7;color:#344054}.roster-empty{font-size:11px;color:#98a2b3}
-          '''
-          if '.roster-grid{' not in s:
-              s = s.replace('.error{color:var(--red);font-weight:700}', roster_css + '.error{color:var(--red);font-weight:700}')
-              s = s.replace('@media(max-width:760px){', '@media(max-width:900px){.roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){')
-              s = s.replace('.tab{flex:1}}', '.tab{flex:1}.roster-grid{grid-template-columns:1fr}}')
-
-          new_block = r'''function cellStatus(c,date){
- const ppl=people(c),ls=knownLongSet(c),rec=attendance[attId(date,c.id)]?.records||{};
- const names={present:[],late:[],absent:[],long:[],missing:[]};let p=0,l=0,a=0,m=0,x=0;
- const displayName=person=>person.role==="셀원"?person.name:`${person.name} (${person.role})`;
- ppl.forEach((person,i)=>{
-  const k=personKey(person,i),name=displayName(person);
-  if(ls.has(k)){x++;names.long.push(name);return}
-  const state=rec[k];
-  if(state==="present"){p++;names.present.push(name)}
-  else if(state==="late"){l++;names.late.push(name)}
-  else if(state==="absent"){a++;names.absent.push(name)}
-  else{m++;names.missing.push(name)}
- });
- return{total:ppl.length,eligible:ppl.length-x,p,l,a,m,x,has:!!attendance[attId(date,c.id)],names};
-}
-function nameChips(list){return list.length?list.map(n=>`<span class="name-chip">${esc(n)}</span>`).join(""):'<span class="roster-empty">없음</span>'}
-function renderDash(){
- const date=$("dashDate").value||today();$("nPeople").textContent=cells.reduce((n,c)=>n+people(c).length,0);$("nCells").textContent=cells.length;
- let P=0,L=0,A=0,M=0,X=0,E=0;cells.forEach(c=>{const s=cellStatus(c,date);P+=s.p;L+=s.l;A+=s.a;M+=s.m;X+=s.x;E+=s.eligible});
- $("rate").textContent=E?Math.round(P/E*100)+"%":"-";$("rateNote").textContent=`${date} · 출석 ${P} · 지각 ${L} · 결석 ${A} · 장기결석 ${X} · 미체크 ${M}`;
- $("summary").innerHTML=cells.length?cells.map(c=>{
-  const s=cellStatus(c,date),r=s.eligible?Math.round(s.p/s.eligible*100):0;
-  return `<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">전체 ${s.total}명 · 출석대상 ${s.eligible}명</div></div><b style="font-size:22px;color:var(--p)">${s.has?r+"%":"-"}</b></div><div class="metrics"><span class="metric mp">출석 ${s.p}</span><span class="metric ml">지각 ${s.l}</span><span class="metric ma">결석 ${s.a}</span><span class="metric mx">장기결석 ${s.x}</span><span class="metric mm">미체크 ${s.m}</span></div><div class="progress"><span style="width:${s.has?r:0}%"></span></div><details class="roster" open><summary>명단 보기 · ${s.total}명</summary><div class="roster-grid"><div class="roster-group"><div class="roster-title p">출석 ${s.p}</div><div class="name-list">${nameChips(s.names.present)}</div></div><div class="roster-group"><div class="roster-title l">지각 ${s.l}</div><div class="name-list">${nameChips(s.names.late)}</div></div><div class="roster-group"><div class="roster-title a">결석 ${s.a}</div><div class="name-list">${nameChips(s.names.absent)}</div></div><div class="roster-group"><div class="roster-title x">장기결석 ${s.x}</div><div class="name-list">${nameChips(s.names.long)}</div></div><div class="roster-group"><div class="roster-title m">미체크 ${s.m}</div><div class="name-list">${nameChips(s.names.missing)}</div></div></div></details></div>`
- }).join(""):'<div class="muted">표시할 셀이 없습니다.</div>';
-}
-'''
-          pattern = re.compile(r'function cellStatus\(c,date\)\{.*?\n\}\nfunction renderDash\(\)\{.*?\n\}\n(?=\n\$\("addCell"\))', re.S)
-          if not pattern.search(s):
-              raise SystemExit('dashboard function block not found')
-          s = pattern.sub(new_block, s, count=1)
-          p.write_text(s, encoding='utf-8')
-          PY
-      - name: Commit patched app
-        shell: bash
+      - name: Patch app-v4 dashboard
+        run: python patch_dashboard_roster.py
+      - name: Commit app change
         run: |
           if git diff --quiet -- app-v4.html; then
             echo "No app changes needed"
