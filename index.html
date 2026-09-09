@@ -37,6 +37,7 @@ button{border:0;border-radius:9px;padding:10px 13px;font-weight:800;cursor:point
     <div class="muted">관리자가 발급한 계정으로 로그인하세요.</div>
     <label>이메일</label><input id="email" type="email" autocomplete="username">
     <label>비밀번호</label><input id="password" type="password" autocomplete="current-password">
+    <label style="display:flex;align-items:center;gap:7px;font-weight:500;margin-top:8px;cursor:pointer"><input id="showPassword" type="checkbox" style="width:auto;margin:0"> 비밀번호 보기</label>
     <button id="loginBtn" class="primary" style="width:100%;margin-top:14px">로그인</button>
     <div id="loginMsg" class="status"></div>
   </section>
@@ -112,7 +113,28 @@ const esc=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'
 const today=()=>{const d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)}; $("attDate").value=today();
 const people=c=>[...(c.leader?[{name:c.leader,role:"리더"}]:[]),...(c.helper?[{name:c.helper,role:"헬퍼"}]:[]),...(c.members||[]).map(name=>({name,role:"셀원"}))];
 
-$("loginBtn").onclick=async()=>{ $("loginMsg").textContent="로그인 중..."; try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);$("loginMsg").textContent="";}catch(e){$("loginMsg").textContent="로그인 정보를 확인해주세요.";} };
+$("showPassword").onchange=()=>{ $("password").type=$("showPassword").checked?"text":"password"; };
+$("loginBtn").onclick=async()=>{
+  $("loginMsg").textContent="로그인 중...";
+  try{
+    await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+    $("loginMsg").textContent="";
+  }catch(e){
+    console.error("Firebase login error:",e);
+    const code=e?.code||"unknown-error";
+    const messages={
+      "auth/invalid-credential":"이메일 또는 비밀번호가 올바르지 않습니다.",
+      "auth/user-not-found":"등록되지 않은 이메일입니다.",
+      "auth/wrong-password":"비밀번호가 올바르지 않습니다.",
+      "auth/invalid-email":"이메일 형식을 확인해주세요.",
+      "auth/unauthorized-domain":"현재 웹사이트 도메인이 Firebase 인증에서 승인되지 않았습니다.",
+      "auth/operation-not-allowed":"Firebase에서 이메일/비밀번호 로그인이 활성화되어 있지 않습니다.",
+      "auth/too-many-requests":"로그인 시도가 너무 많아 일시적으로 제한되었습니다. 잠시 후 다시 시도해주세요.",
+      "auth/network-request-failed":"네트워크 연결을 확인해주세요."
+    };
+    $("loginMsg").textContent=`${messages[code]||"로그인에 실패했습니다."} (${code})`;
+  }
+};
 $("logoutBtn").onclick=()=>signOut(auth);
 onAuthStateChanged(auth,u=>{
   $("loginView").classList.toggle("hidden",!!u); $("appView").classList.toggle("hidden",!u); $("userBox").classList.toggle("hidden",!u);
