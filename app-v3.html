@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>퍼스백양장로교회 청년부 출석체크</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb}iframe{border:0;width:100%;height:100%;display:block}</style>
+</head>
+<body>
+<iframe id="appFrame" src="./app-ui2.html?v=20260909-longabsence-v3"></iframe>
+<script type="module">
+import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import{getFirestore,doc,getDoc,updateDoc,collection,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import{firebaseConfig}from"./firebase-config.js?v=20260909-longabsence-v3";
+const OWNER_EMAIL='jaehokorea92@gmail.com';
+const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+let profile=null,cells=[],attendance={},subs=[],currentUser=null;
+const frame=document.getElementById('appFrame');
+const people=c=>[...(c?.leader?[{name:c.leader,role:'리더'}]:[]),...(c?.helper?[{name:c.helper,role:'헬퍼'}]:[]),...(c?.members||[]).map(name=>({name,role:'셀원'}))];
+const pkey=(p,i)=>`${p.role}:${p.name}:${i}`;
+const longSet=c=>new Set(Array.isArray(c?.longAbsentKeys)?c.longAbsentKeys:[]);
+const canEdit=()=>['admin','leader','helper'].includes(profile?.role);
+function clearSubs(){subs.forEach(f=>{try{f()}catch{}});subs=[];cells=[];attendance={}}
+function injectStyles(w){if(w.document.getElementById('longAbsenceV3Style'))return;const s=w.document.createElement('style');s.id='longAbsenceV3Style';s.textContent='.att.x{background:#fff;color:#7655d6;border:1px solid #d9cef9}.att.x.on{background:#f0ebff;color:#6544c8;border-color:#c9b9f6}.longrow{background:#fbf9ff}.longrow td:first-child strong:after{content:" · 장기결석";font-size:10px;color:#7655d6;font-weight:800}.att:disabled{opacity:.5;cursor:not-allowed}.metric.x{background:#f0ebff;color:#7655d6}';w.document.head.appendChild(s)}
+function selectedCell(w){const id=w.document.getElementById('attCell')?.value;return cells.find(c=>c.id===id)}
+function patchPick(w){w.pick=(btn,state)=>{if(!canEdit())return;const tr=btn.closest('tr');if(tr.classList.contains('longrow'))return;const same=tr.dataset.s===state;tr.dataset.s=same?'':state;tr.querySelectorAll('.att.p,.att.l,.att.a').forEach(x=>x.classList.remove('on'));if(!same)btn.classList.add('on')}}
+async function toggleLong(cellId,key){if(!canEdit())return;const c=cells.find(x=>x.id===cellId);if(!c)return;const set=longSet(c);if(set.has(key))set.delete(key);else set.add(key);await updateDoc(doc(db,'cells',cellId),{longAbsentKeys:[...set],longAbsentUpdatedAt:Date.now(),longAbsentUpdatedBy:currentUser?.email||''})}
+function enhanceAttendance(w){const body=w.document.getElementById('attBody'),c=selectedCell(w);if(!body||!c)return;const ls=longSet(c),rows=[...body.querySelectorAll('tr[data-k]')];rows.forEach((tr,i)=>{const p=people(c)[i];if(!p)return;const key=pkey(p,i),isLong=ls.has(key);tr.classList.toggle('longrow',isLong);if(isLong){tr.dataset.s='';tr.querySelectorAll('.att.p,.att.l,.att.a').forEach(b=>{b.classList.remove('on');b.disabled=true})}else if(canEdit()){tr.querySelectorAll('.att.p,.att.l,.att.a').forEach(b=>b.disabled=false)}let b=tr.querySelector('.att.x');if(!b){b=w.document.createElement('button');b.className='att x';b.textContent='장기결석';b.addEventListener('click',()=>toggleLong(c.id,key));tr.querySelector('.actions')?.appendChild(b)}b.classList.toggle('on',isLong);b.disabled=!canEdit()})}
+function enhanceAllPresent(w){const b=w.document.getElementById('allPresent');if(!b||b.dataset.v3)return;b.dataset.v3='1';b.onclick=()=>{if(!canEdit())return;w.document.querySelectorAll('#attBody tr[data-k]').forEach(tr=>{if(tr.classList.contains('longrow'))return;tr.dataset.s='present';tr.querySelectorAll('.att.p,.att.l,.att.a').forEach(x=>x.classList.remove('on'));tr.querySelector('.att.p')?.classList.add('on')})}}
+function enhanceSave(w){const b=w.document.getElementById('saveAtt');if(!b||b.dataset.v3)return;b.dataset.v3='1';const old=b.onclick;b.onclick=async ev=>{w.document.querySelectorAll('#attBody tr.longrow[data-k]').forEach(tr=>tr.dataset.s='');if(old)await old.call(b,ev)}}
+function enhanceDashboard(w){const date=w.document.getElementById('dashDate')?.value;if(!date)return;let totalEligible=0,present=0,late=0,absent=0,longAbsent=0,missing=0;cells.forEach(c=>{const ppl=people(c),ls=longSet(c),rec=attendance[`${date}__${c.id}`]?.records||{};ppl.forEach((p,i)=>{const k=pkey(p,i);if(ls.has(k)){longAbsent++;return}totalEligible++;const s=rec[k];if(s==='present')present++;else if(s==='late')late++;else if(s==='absent')absent++;else missing++})});const rate=w.document.getElementById('rate'),note=w.document.getElementById('rateNote');if(rate)rate.textContent=totalEligible?Math.round(present/totalEligible*100)+'%':'-';if(note)note.textContent=`${date} · 출석 ${present} · 지각 ${late} · 결석 ${absent} · 장기결석 ${longAbsent} · 미체크 ${missing}`;const summary=w.document.getElementById('summary');if(summary){[...summary.querySelectorAll('.cell')].forEach((box,idx)=>{const c=cells[idx];if(!c)return;let x=box.querySelector('.metric.x');if(!x){x=w.document.createElement('span');x.className='metric x';const metrics=box.querySelector('.attendance-metrics');metrics?.appendChild(x)}x.textContent='장기결석 '+longSet(c).size})}}
+function enhance(w){injectStyles(w);patchPick(w);enhanceAttendance(w);enhanceAllPresent(w);enhanceSave(w);enhanceDashboard(w)}
+function startObserver(){const w=frame.contentWindow;if(!w?.document)return;enhance(w);const mo=new MutationObserver(()=>enhance(w));mo.observe(w.document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','value']});setInterval(()=>enhance(w),800)}
+frame.addEventListener('load',startObserver);
+onAuthStateChanged(auth,async u=>{clearSubs();currentUser=u;if(!u){profile=null;return}const ps=await getDoc(doc(db,'users',u.uid));profile=ps.exists()?ps.data():{};const admin=(u.email||'').toLowerCase()===OWNER_EMAIL||profile.role==='admin';if(admin){subs.push(onSnapshot(collection(db,'cells'),s=>{cells=s.docs.map(d=>({id:d.id,...d.data()}));enhance(frame.contentWindow)}));subs.push(onSnapshot(collection(db,'attendance'),s=>{attendance={};s.docs.forEach(d=>attendance[d.id]=d.data());enhance(frame.contentWindow)}))}else if(profile.cellId){subs.push(onSnapshot(doc(db,'cells',profile.cellId),s=>{cells=s.exists()?[{id:s.id,...s.data()}]:[];enhance(frame.contentWindow)}));subs.push(onSnapshot(query(collection(db,'attendance'),where('cellId','==',profile.cellId)),s=>{attendance={};s.docs.forEach(d=>attendance[d.id]=d.data());enhance(frame.contentWindow)}))}});
+</script>
+</body></html>
