@@ -1,9 +1,69 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 로그인한 사용자만 청년부 출석 데이터에 접근할 수 있습니다.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    function signedIn() {
+      return request.auth != null;
+    }
+    function ownerEmail() {
+      return signedIn() && request.auth.token.email == 'jaehokorea92@gmail.com';
+    }
+    function myUserPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    function hasProfile() {
+      return signedIn() && exists(myUserPath());
+    }
+    function myRole() {
+      return get(myUserPath()).data.role;
+    }
+    function myCell() {
+      return get(myUserPath()).data.cellId;
+    }
+    function isAdmin() {
+      return ownerEmail() || (hasProfile() && myRole() == 'admin');
+    }
+    function isApproved() {
+      return hasProfile() && myRole() in ['admin', 'leader', 'helper', 'viewer'];
+    }
+    function canEditOwnAttendance() {
+      return hasProfile() && myRole() in ['leader', 'helper'];
+    }
+
+    match /users/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+
+      // 최초 로그인 시 자신의 프로필만 생성할 수 있습니다.
+      // 최초 관리자 이메일은 admin, 그 외 계정은 pending으로 시작합니다.
+      allow create: if signedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.email == request.auth.token.email
+                    && (
+                      (ownerEmail() && request.resource.data.role == 'admin')
+                      || (!ownerEmail() && request.resource.data.role == 'pending' && request.resource.data.cellId == '')
+                    );
+
+      // 역할/담당 셀 변경은 관리자만 가능합니다.
+      allow update, delete: if isAdmin();
+    }
+
+    match /cells/{cellId} {
+      allow read: if isAdmin() || (isApproved() && myCell() == cellId);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAdmin() || (isApproved() && resource.data.cellId == myCell());
+
+      allow create: if isAdmin()
+                    || (canEditOwnAttendance() && request.resource.data.cellId == myCell());
+
+      allow update: if isAdmin()
+                    || (canEditOwnAttendance()
+                        && resource.data.cellId == myCell()
+                        && request.resource.data.cellId == myCell());
+
+      allow delete: if isAdmin()
+                    || (canEditOwnAttendance() && resource.data.cellId == myCell());
     }
   }
 }
