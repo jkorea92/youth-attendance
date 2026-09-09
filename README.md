@@ -2,4 +2,4 @@
 
 Perth Baekyang Presbyterian Church youth attendance app.
 
-The production site is deployed from `index.html` on GitHub Pages.
+Production: GitHub Pages serves `index.html` from the `main` branch.
