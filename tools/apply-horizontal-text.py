@@ -33,3 +33,5 @@ for name in ('index.html','app-v4.html'):
     if marker not in s:
         s = s.replace('</style>', CSS + '\n</style>', 1)
         p.write_text(s, encoding='utf-8')
+
+# trigger workflow after creation
