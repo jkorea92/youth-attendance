@@ -2,61 +2,262 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <title>퍼스백양장로교회 청년부 출석체크</title>
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--text:#162033;--muted:#718096;--line:#e6eaf0;--p:#3559db;--p2:#eef2ff;--green:#178457;--red:#c0392b;--amber:#b7791f;--shadow:0 10px 30px rgba(30,55,90,.08)}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;background:linear-gradient(180deg,#f7f9fd 0,#f3f6fa 100%);color:var(--text);min-height:100vh}
-header{background:linear-gradient(135deg,#2949c7,#4b6ee8);color:#fff;padding:20px 16px;box-shadow:0 8px 24px rgba(47,73,176,.18)}
-.wrap{max-width:1140px;margin:20px auto;padding:0 18px}.hidden{display:none!important}
-.brand{display:flex;align-items:center;gap:12px}.brandmark{width:42px;height:42px;border-radius:14px;background:#ffffff1c;border:1px solid #ffffff35;display:grid;place-items:center;font-size:20px}.brandtitle{font-size:21px;font-weight:900;letter-spacing:-.4px}.brandsub{font-size:12px;opacity:.82;margin-top:2px}
-.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center}.user-area{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.user-email{font-size:13px;opacity:.95}.badge{background:#fff;color:#3559db;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}.auth{max-width:460px;margin:52px auto}.auth h2,.card h3{margin-top:0}.auth h2{font-size:24px;letter-spacing:-.5px}
-.muted{font-size:13px;color:var(--muted);line-height:1.55}.status{font-size:12px;margin-top:10px;white-space:pre-wrap;color:#556070}
-label{display:block;font-size:12px;font-weight:800;margin:13px 0 6px;color:#344054}input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d8dee8;border-radius:11px;font-size:14px;background:#fff;transition:.18s}input:focus,select:focus,textarea:focus{outline:none;border-color:#7890ec;box-shadow:0 0 0 3px #e8edff}
-button{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer;transition:.18s;letter-spacing:-.1px}button:hover{transform:translateY(-1px)}.primary{background:linear-gradient(135deg,#3559db,#4d6fea);color:#fff;box-shadow:0 6px 16px rgba(53,89,219,.2)}.soft{background:var(--p2);color:var(--p)}.danger{background:#fff0ee;color:var(--red)}.green{background:#eaf8f1;color:var(--green)}.w100{width:100%;margin-top:10px}
-.auth-nav{display:flex;gap:9px;margin-top:11px}.auth-nav button{flex:1}.divider{height:1px;background:var(--line);margin:18px 0}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 16px;padding:5px;background:#eaf0f8;border:1px solid #e2e8f0;border-radius:14px;width:max-content;max-width:100%}.tab{background:transparent;color:#344054;box-shadow:none}.tab.active{background:#fff;color:var(--p);box-shadow:0 5px 16px rgba(35,55,90,.08)}
-.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}
-.stat-card{position:relative;overflow:hidden}.stat-card:after{content:"";position:absolute;width:78px;height:78px;border-radius:50%;right:-24px;top:-24px;background:#eef2ff}.stat-label{font-size:12px;color:var(--muted);font-weight:700}.stat{font-size:34px;font-weight:900;margin-top:8px;letter-spacing:-1px}.stat-note{font-size:11px;color:#98a2b3;margin-top:3px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.table{overflow:auto;border:1px solid var(--line);border-radius:13px}table{width:100%;border-collapse:collapse}th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{font-size:11px;color:#667085;background:#f8fafc;text-transform:none}tr:last-child td{border-bottom:0}
-.cell{border:1px solid var(--line);border-radius:14px;padding:15px;margin:10px 0;background:#fbfcfe}.celltop{display:flex;justify-content:space-between;gap:10px;align-items:center}.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{background:#f0f3f8;border-radius:999px;padding:6px 9px;font-size:11px;color:#475467}
-.att{border:1px solid var(--line);background:#fff;padding:8px 10px;font-size:12px}.att.on.p{background:#e9f8f0;color:var(--green);border-color:#bce5cf}.att.on.l{background:#fff7e6;color:var(--amber);border-color:#f3d7a3}.att.on.a{background:#fff0ee;color:var(--red);border-color:#f2c5bf}
-.notice{border:1px solid #f3d58f;background:#fff9ea;border-radius:14px;padding:15px;margin-bottom:14px}.role-select{min-width:120px}.cell-select{min-width:160px}.section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}.section-title{font-size:19px;font-weight:900;margin:0}.download-card{max-width:650px}.download-icon{width:48px;height:48px;border-radius:14px;background:#eef2ff;display:grid;place-items:center;font-size:22px;margin-bottom:14px}.empty{padding:22px;text-align:center;color:var(--muted);font-size:13px}
-#cloudStatus{display:none!important}
-@media(max-width:760px){.s4,.s6,.s8,.s12{grid-column:span 12}.row{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.tabs{width:100%}.tab{flex:1}.auth-nav{flex-direction:column}.section-head{flex-direction:column}th,td{padding:9px}.wrap{padding:0 12px}}
+:root{--p:#365bdc;--bg:#f5f7fb;--card:#fff;--line:#e4e9f0;--text:#172033;--muted:#748096;--green:#16845a;--amber:#b7791f;--red:#c23b31;--purple:#7356c8}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,#2949c7,#4b6ee8);color:#fff;padding:18px}.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center}.brand{font-weight:900;font-size:20px}.sub{font-size:12px;opacity:.8;margin-top:3px}
+.user{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.badge{background:#fff;color:var(--p);padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.hidden{display:none!important}.auth{max-width:460px;margin:44px auto}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:20px;box-shadow:0 8px 24px rgba(40,55,90,.07)}
+h2,h3{margin-top:0}label{display:block;font-size:12px;font-weight:800;margin:12px 0 6px}input,select,textarea{width:100%;padding:11px;border:1px solid #d7deea;border-radius:10px;background:#fff}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.primary{background:var(--p);color:#fff}.soft{background:#eef2ff;color:var(--p)}.green{background:#eaf8f1;color:var(--green)}.danger{background:#fff0ee;color:var(--red)}.w100{width:100%;margin-top:10px}
+.muted{color:var(--muted);font-size:12px;line-height:1.5}.status{font-size:12px;margin-top:10px;min-height:18px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0;padding:5px;background:#eaf0f8;border-radius:13px;width:max-content;max-width:100%}.tab{background:transparent}.tab.active{background:#fff;color:var(--p);box-shadow:0 4px 12px rgba(35,55,90,.08)}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.s4{grid-column:span 4}.s12{grid-column:span 12}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{font-size:32px;font-weight:900;margin-top:6px}.table{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{background:#f8fafc;font-size:11px;color:#667085}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.att{background:#fff;border:1px solid var(--line);padding:8px 10px}.att.on.p{background:#e9f8f0;color:var(--green);border-color:#bce5cf}.att.on.l{background:#fff7e6;color:var(--amber);border-color:#f3d7a3}.att.on.a{background:#fff0ee;color:var(--red);border-color:#f2c5bf}.att.on.x{background:#f0ebff;color:var(--purple);border-color:#d7cafa}.att:disabled{opacity:.45;cursor:not-allowed}.longrow{background:#fbf9ff}
+.cell{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;background:#fbfcfe}.celltop{display:flex;justify-content:space-between;align-items:center;gap:10px}.metrics{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.metric{padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800}.mp{background:#e9f8f0;color:var(--green)}.ml{background:#fff7e6;color:var(--amber)}.ma{background:#fff0ee;color:var(--red)}.mx{background:#f0ebff;color:var(--purple)}.mm{background:#eef2f6;color:#667085}
+.progress{height:8px;background:#edf1f5;border-radius:999px;overflow:hidden;margin-top:10px}.progress span{display:block;height:100%;background:var(--p)}.notice{background:#fff8e8;border:1px solid #f2d28c;border-radius:13px;padding:14px;margin-top:18px}
+
+.roster{margin-top:13px;border-top:1px solid var(--line);padding-top:10px}.roster summary{cursor:pointer;font-size:12px;font-weight:900;color:#344054;user-select:none}.roster-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}.roster-group{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff;min-height:68px}.roster-title{font-size:11px;font-weight:900;margin-bottom:7px}.roster-title.p{color:var(--green)}.roster-title.l{color:var(--amber)}.roster-title.a{color:var(--red)}.roster-title.x{color:var(--purple)}.roster-title.m{color:#667085}.name-list{display:flex;flex-wrap:wrap;gap:5px}.name-chip{font-size:11px;padding:4px 7px;border-radius:999px;background:#f2f4f7;color:#344054}.roster-empty{font-size:11px;color:#98a2b3}
+.error{color:var(--red);font-weight:700}.ok{color:var(--green);font-weight:700}
+@media(max-width:900px){.roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.s4,.s12{grid-column:span 12}.row{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.tabs{width:100%}.tab{flex:1}.roster-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><div class="wrap topbar" style="margin:0 auto"><div class="brand"><div class="brandmark">✓</div><div><div class="brandtitle">퍼스백양장로교회 청년부 출석체크</div><div class="brandsub">온라인 공동 출석관리</div></div></div><div id="userBox" class="user-area hidden"><span id="userEmail" class="user-email"></span><span id="roleBadge" class="badge"></span><button id="logoutBtn" class="soft">로그아웃</button></div></div></header>
+<header><div class="wrap top"><div><div class="brand">✓ 퍼스백양장로교회 청년부 출석체크</div><div class="sub">온라인 공동 출석관리</div></div><div id="userBox" class="user hidden"><span id="userEmail"></span><span id="roleBadge" class="badge"></span><button id="logout" class="soft">로그아웃</button></div></div></header>
 <div class="wrap">
-<section id="authLogin" class="auth card"><h2>로그인</h2><div class="muted">청년부 출석관리 계정으로 로그인하세요.</div><label>이메일</label><input id="email" type="email" autocomplete="username"><label>비밀번호</label><input id="password" type="password" autocomplete="current-password"><label style="display:flex;align-items:center;gap:7px;font-weight:600;cursor:pointer"><input id="showPassword" type="checkbox" style="width:auto;margin:0"> 비밀번호 보기</label><button id="loginBtn" class="primary w100">로그인</button><div class="auth-nav"><button id="toSignup" class="soft">계정 신청</button><button id="toRecovery" class="soft">아이디/비밀번호 찾기</button></div><div id="loginMsg" class="status"></div></section>
-<section id="authSignup" class="auth card hidden"><h2>계정 신청</h2><div class="muted">가입 후에는 승인 대기 상태가 됩니다. 관리자가 역할과 담당 셀을 지정하면 이용할 수 있습니다.</div><label>이름</label><input id="signupName" autocomplete="name"><label>이메일</label><input id="signupEmail" type="email" autocomplete="email"><label>비밀번호</label><input id="signupPassword" type="password" placeholder="6자 이상"><label>비밀번호 확인</label><input id="signupPassword2" type="password"><button id="signupBtn" class="primary w100">계정 만들기</button><button id="signupBack" class="soft w100">로그인으로 돌아가기</button><div id="signupMsg" class="status"></div></section>
-<section id="authRecovery" class="auth card hidden"><h2>아이디 / 비밀번호 찾기</h2><h3>아이디 찾기</h3><div class="muted">아이디는 가입할 때 사용한 이메일입니다.</div><button id="findIdBtn" class="soft w100">이 기기에 저장된 아이디 확인</button><div id="findIdMsg" class="status"></div><div class="divider"></div><h3>비밀번호 재설정</h3><label>가입한 이메일</label><input id="resetEmail" type="email"><button id="resetBtn" class="primary w100">재설정 메일 보내기</button><button id="recoveryBack" class="soft w100">로그인으로 돌아가기</button><div id="resetMsg" class="status"></div></section>
-<main id="appView" class="hidden"><div id="pendingNotice" class="notice hidden"><strong>접근 승인 대기 중입니다.</strong><div class="muted" style="margin-top:5px">관리자가 사용자 관리에서 역할과 담당 셀을 지정하면 사용할 수 있습니다.</div></div><div id="tabs" class="tabs"><button class="tab active" data-tab="dash">대시보드</button><button class="tab" data-tab="attend">출석 체크</button><button id="cellsTab" class="tab" data-tab="cells">셀 관리</button><button id="usersTab" class="tab" data-tab="users">사용자 관리</button><button id="dataTab" class="tab" data-tab="data">데이터</button></div>
-<section id="dash" class="panel active"><div class="grid"><div class="card s4 stat-card"><div class="stat-label">전체 인원</div><div id="nPeople" class="stat">0</div><div class="stat-note">현재 등록 인원</div></div><div class="card s4 stat-card"><div class="stat-label">셀 수</div><div id="nCells" class="stat">0</div><div class="stat-note">현재 운영 셀</div></div><div class="card s4 stat-card"><div class="stat-label">최근 출석률</div><div id="rate" class="stat">-</div><div class="stat-note">최근 저장된 출석 기준</div></div><div class="card s12"><div class="section-head"><div><h3 class="section-title">셀별 현황</h3><div class="muted">등록된 셀과 구성원을 한눈에 확인합니다.</div></div></div><div id="summary"></div></div></div></section>
-<section id="attend" class="panel"><div class="grid"><div class="card s12"><div class="section-head"><div><h3 class="section-title">출석 체크</h3><div class="muted">날짜와 셀을 선택한 뒤 출석 상태를 기록하세요.</div></div></div><div class="row"><div><label>날짜</label><input id="attDate" type="date"></div><div><label>셀</label><select id="attCell"></select></div></div><div class="actions" style="margin-top:14px"><button id="allPresent" class="green">전체 출석</button><button id="saveAtt" class="primary">출석 저장</button></div><div id="attPermission" class="status muted"></div></div><div class="card s12"><div class="table"><table><thead><tr><th>이름</th><th>역할</th><th>출석 상태</th></tr></thead><tbody id="attBody"></tbody></table></div></div></div></section>
-<section id="cells" class="panel"><div class="grid"><div class="card s4"><h3 class="section-title">새 셀 등록</h3><div class="muted">셀 기본 정보와 구성원을 등록합니다.</div><label>셀 이름</label><input id="cellName" placeholder="예: 인생셀"><div class="row"><div><label>리더</label><input id="leader"></div><div><label>헬퍼</label><input id="helper"></div></div><label>셀원 이름</label><textarea id="members" rows="8" placeholder="한 줄에 한 명씩 입력"></textarea><button id="addCell" class="primary" style="margin-top:12px">셀 저장</button></div><div class="card s8"><h3 class="section-title">등록된 셀</h3><div class="muted" style="margin-bottom:10px">등록된 셀과 구성원을 관리합니다.</div><div id="cellList"></div></div></div></section>
-<section id="users" class="panel"><div class="card"><h3 class="section-title">사용자 권한 관리</h3><p class="muted">신규 가입자는 승인 대기로 표시됩니다. 역할과 담당 셀을 지정한 뒤 저장하세요.</p><div class="table"><table><thead><tr><th>이름</th><th>이메일</th><th>역할</th><th>담당 셀</th><th>저장</th></tr></thead><tbody id="userBody"></tbody></table></div></div></section>
-<section id="data" class="panel"><div class="card download-card"><div class="download-icon">⇩</div><h3 class="section-title">출석 데이터 내보내기</h3><p class="muted">등록된 셀원과 출석 기록을 CSV 형식으로 내려받습니다. 출석 기록이 없어도 등록된 셀원 목록은 포함됩니다.</p><button id="csvBtn" class="primary">CSV 다운로드</button><span id="cloudStatus"></span></div></section>
+<section id="loginView" class="auth card"><h2>로그인</h2><div class="muted">청년부 출석관리 계정으로 로그인하세요.</div><label>이메일</label><input id="email" type="email"><label>비밀번호</label><input id="pw" type="password"><label><input id="showPw" type="checkbox" style="width:auto"> 비밀번호 보기</label><button id="login" class="primary w100">로그인</button><button id="goSignup" class="soft w100">계정 신청</button><button id="goReset" class="soft w100">비밀번호 찾기</button><div id="loginMsg" class="status"></div></section>
+<section id="signupView" class="auth card hidden"><h2>계정 신청</h2><div class="muted">가입 후 관리자 승인 전까지는 출석 데이터에 접근할 수 없습니다.</div><label>이름</label><input id="sname"><label>이메일</label><input id="semail" type="email"><label>비밀번호</label><input id="spw" type="password"><label>비밀번호 확인</label><input id="spw2" type="password"><button id="signup" class="primary w100">계정 만들기</button><button class="soft w100 backLogin">로그인으로 돌아가기</button><div id="signupMsg" class="status"></div></section>
+<section id="resetView" class="auth card hidden"><h2>비밀번호 찾기</h2><label>가입한 이메일</label><input id="remail" type="email"><button id="reset" class="primary w100">재설정 메일 보내기</button><button class="soft w100 backLogin">로그인으로 돌아가기</button><div id="resetMsg" class="status"></div></section>
+
+<main id="app" class="hidden">
+<div id="pending" class="notice hidden"><b>접근 승인 대기 중입니다.</b><div class="muted">관리자가 역할과 담당 셀을 지정하면 사용할 수 있습니다.</div></div>
+<div id="tabs" class="tabs"><button class="tab active" data-tab="dash">대시보드</button><button class="tab" data-tab="attend">출석 체크</button><button id="cellsTab" class="tab" data-tab="cells">셀 관리</button><button id="usersTab" class="tab" data-tab="users">사용자 관리</button><button id="dataTab" class="tab" data-tab="data">데이터</button></div>
+
+<section id="dash" class="panel active"><div class="grid">
+<div class="card s12"><div class="row"><div><h3>날짜별 출석 현황</h3><div class="muted">선택한 날짜 기준으로 계산됩니다.</div></div><div><label>조회 날짜</label><input id="dashDate" type="date"></div></div></div>
+<div class="card s4"><div class="muted">전체 등록 인원</div><div id="nPeople" class="stat">0</div></div>
+<div class="card s4"><div class="muted">셀 수</div><div id="nCells" class="stat">0</div></div>
+<div class="card s4"><div class="muted">선택 날짜 출석률</div><div id="rate" class="stat">-</div><div id="rateNote" class="muted"></div></div>
+<div class="card s12"><h3>셀별 출석</h3><div id="summary"></div></div>
+</div></section>
+
+<section id="attend" class="panel"><div class="grid">
+<div class="card s12"><h3>출석 체크</h3><div class="row"><div><label>날짜</label><input id="attDate" type="date"></div><div><label>셀</label><select id="attCell"><option value="">셀 선택</option></select></div></div><div class="actions" style="margin-top:12px"><button id="allPresent" class="green">전체 출석</button><button id="saveAtt" class="primary">출석 저장</button></div><div id="attMsg" class="status"></div></div>
+<div class="card s12"><div class="table"><table><thead><tr><th>이름</th><th>역할</th><th>출석 상태</th><th>장기결석</th></tr></thead><tbody id="attBody"><tr><td colspan="4">셀을 선택해주세요.</td></tr></tbody></table></div></div>
+</div></section>
+
+<section id="cells" class="panel"><div class="grid">
+<div class="card s4"><h3>새 셀 등록</h3><label>셀 이름</label><input id="cellName"><label>리더</label><input id="leader"><label>헬퍼</label><input id="helper"><label>셀원</label><textarea id="members" rows="7" placeholder="한 줄에 한 명"></textarea><button id="addCell" class="primary w100">셀 저장</button></div>
+<div class="card" style="grid-column:span 8"><h3>등록된 셀</h3><div id="cellList"></div></div>
+</div></section>
+
+<section id="users" class="panel"><div class="card"><h3>사용자 관리</h3><div class="table"><table><thead><tr><th>이름</th><th>이메일</th><th>역할</th><th>담당 셀</th><th>저장</th></tr></thead><tbody id="userBody"></tbody></table></div></div></section>
+<section id="data" class="panel"><div class="card"><h3>출석 데이터</h3><p class="muted">등록 인원과 출석 기록을 CSV로 내보냅니다.</p><button id="csv" class="primary">CSV 다운로드</button></div></section>
 </main></div>
+
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import{getFirestore,collection,addDoc,doc,updateDoc,deleteDoc,setDoc,getDoc,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import{firebaseConfig}from"./firebase-config.js?v=20260909-ui1";
-const OWNER_EMAIL="jaehokorea92@gmail.com",app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let currentUser=null,profile=null,cells=[],attendance={},users=[],unsubs=[],syncKey="";const $=id=>document.getElementById(id),esc=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));const today=()=>{const d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)};$('attDate').value=today();const people=c=>[...(c?.leader?[{name:c.leader,role:"리더"}]:[]),...(c?.helper?[{name:c.helper,role:"헬퍼"}]:[]),...(c?.members||[]).map(name=>({name,role:"셀원"}))],roleLabel=r=>({admin:"관리자",leader:"셀 리더",helper:"헬퍼",viewer:"조회 전용",pending:"승인 대기"}[r]||r||"-"),canEditAttendance=()=>["admin","leader","helper"].includes(profile?.role),isAdmin=()=>profile?.role==="admin";
-function showAuth(which){['authLogin','authSignup','authRecovery'].forEach(id=>$(id).classList.toggle('hidden',id!==which))}$('toSignup').onclick=()=>{$('signupEmail').value=$('email').value.trim();showAuth('authSignup')};$('signupBack').onclick=()=>showAuth('authLogin');$('toRecovery').onclick=()=>{$('resetEmail').value=$('email').value.trim();showAuth('authRecovery')};$('recoveryBack').onclick=()=>showAuth('authLogin');$('showPassword').onchange=()=>{$('password').type=$('showPassword').checked?'text':'password'};$('password').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click()});$('findIdBtn').onclick=()=>{const e=localStorage.getItem('youthAttendanceLastEmail');$('findIdMsg').textContent=e?'이 기기에서 마지막으로 사용한 아이디: '+e:'이 기기에 저장된 아이디가 없습니다. 아이디는 가입할 때 사용한 이메일입니다.'};$('resetBtn').onclick=async()=>{const e=$('resetEmail').value.trim();if(!e)return $('resetMsg').textContent='이메일을 입력해주세요.';try{await sendPasswordResetEmail(auth,e);$('resetMsg').textContent='비밀번호 재설정 메일을 보냈습니다. 받은편지함과 스팸함을 확인해주세요.'}catch(err){$('resetMsg').textContent='재설정 메일을 보내지 못했습니다. ('+(err.code||'error')+')'}};$('loginBtn').onclick=async()=>{const email=$('email').value.trim(),password=$('password').value;if(!email||!password)return $('loginMsg').textContent='이메일과 비밀번호를 입력해주세요.';$('loginMsg').textContent='로그인 중...';try{const c=await signInWithEmailAndPassword(auth,email,password);if(c.user.email)localStorage.setItem('youthAttendanceLastEmail',c.user.email);$('loginMsg').textContent=''}catch(e){$('loginMsg').textContent='로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요. ('+(e.code||'error')+')'}};$('signupBtn').onclick=async()=>{const name=$('signupName').value.trim(),email=$('signupEmail').value.trim(),p=$('signupPassword').value,p2=$('signupPassword2').value;if(!name||!email)return $('signupMsg').textContent='이름과 이메일을 입력해주세요.';if(p.length<6)return $('signupMsg').textContent='비밀번호는 6자 이상이어야 합니다.';if(p!==p2)return $('signupMsg').textContent='비밀번호가 일치하지 않습니다.';try{const c=await createUserWithEmailAndPassword(auth,email,p),role=email.toLowerCase()===OWNER_EMAIL?'admin':'pending';localStorage.setItem('youthAttendanceLastEmail',email);await setDoc(doc(db,'users',c.user.uid),{name,email,role,cellId:'',createdAt:Date.now(),updatedAt:Date.now()});$('signupMsg').textContent='계정 신청이 완료되었습니다. 관리자 승인을 기다려주세요.'}catch(e){$('signupMsg').textContent=e.code==='auth/email-already-in-use'?'이미 가입된 이메일입니다.':'계정 생성에 실패했습니다. ('+(e.code||'error')+')'}};$('logoutBtn').onclick=()=>signOut(auth);
-function stopSync(){unsubs.forEach(fn=>{try{fn()}catch{}});unsubs=[];cells=[];attendance={};users=[];syncKey=''}onAuthStateChanged(auth,async u=>{stopSync();currentUser=u;profile=null;['authLogin','authSignup','authRecovery'].forEach(id=>$(id).classList.add('hidden'));$('appView').classList.toggle('hidden',!u);$('userBox').classList.toggle('hidden',!u);$('userEmail').textContent=u?.email||'';if(!u){showAuth('authLogin');return}try{const ref=doc(db,'users',u.uid),snap=await getDoc(ref);if(!snap.exists()){const role=(u.email||'').toLowerCase()===OWNER_EMAIL?'admin':'pending';await setDoc(ref,{name:'',email:u.email||'',role,cellId:'',createdAt:Date.now(),updatedAt:Date.now()})}else if((u.email||'').toLowerCase()===OWNER_EMAIL&&snap.data().role!=='admin'){await setDoc(ref,{role:'admin',email:u.email||'',updatedAt:Date.now()},{merge:true})}unsubs.push(onSnapshot(ref,s=>{profile=s.data()||{role:'pending',cellId:''};applyPermissions();startDataSync()}))}catch(e){console.error(e);alert('사용자 권한 정보를 불러오지 못했습니다. Firestore 보안 규칙을 확인해주세요.')}});
-function applyPermissions(){const r=profile?.role||'pending';$('roleBadge').textContent=roleLabel(r);$('pendingNotice').classList.toggle('hidden',r!=='pending');$('tabs').classList.toggle('hidden',r==='pending');$('cellsTab').classList.toggle('hidden',!isAdmin());$('usersTab').classList.toggle('hidden',!isAdmin());$('dataTab').classList.toggle('hidden',!isAdmin());$('saveAtt').classList.toggle('hidden',!canEditAttendance());$('allPresent').classList.toggle('hidden',!canEditAttendance());$('attPermission').textContent=canEditAttendance()?'출석을 수정할 수 있습니다.':'조회 전용 권한입니다.';if(r==='pending'){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));return}if(!document.querySelector('.panel.active'))activateTab('dash');if(!isAdmin()&&['cells','users','data'].includes(document.querySelector('.tab.active')?.dataset.tab||''))activateTab('dash')}
-function activateTab(id){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id))}document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{if(!b.classList.contains('hidden'))activateTab(b.dataset.tab)});
-function startDataSync(){if(!profile||profile.role==='pending')return;const key=`${profile.role}:${profile.cellId||''}`;if(syncKey===key&&unsubs.length>1)return;while(unsubs.length>1){try{unsubs.pop()()}catch{}}syncKey=key;cells=[];attendance={};users=[];if(isAdmin()){unsubs.push(onSnapshot(collection(db,'cells'),s=>{cells=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},syncError));unsubs.push(onSnapshot(collection(db,'attendance'),s=>{attendance={};s.docs.forEach(d=>attendance[d.id]=d.data());renderAll()},syncError));unsubs.push(onSnapshot(collection(db,'users'),s=>{users=s.docs.map(d=>({id:d.id,...d.data()}));renderUsers()},syncError))}else{if(!profile.cellId){renderAll();return}unsubs.push(onSnapshot(doc(db,'cells',profile.cellId),s=>{cells=s.exists()?[{id:s.id,...s.data()}]:[];renderAll()},syncError));const q=query(collection(db,'attendance'),where('cellId','==',profile.cellId));unsubs.push(onSnapshot(q,s=>{attendance={};s.docs.forEach(d=>attendance[d.id]=d.data());renderAll()},syncError))}}function syncError(e){console.error(e)}
-$('addCell').onclick=async()=>{if(!isAdmin())return;const name=$('cellName').value.trim();if(!name)return alert('셀 이름을 입력해주세요.');const members=$('members').value.split(/\n|,/).map(x=>x.trim()).filter(Boolean);await addDoc(collection(db,'cells'),{name,leader:$('leader').value.trim(),helper:$('helper').value.trim(),members,createdAt:Date.now()});$('cellName').value=$('leader').value=$('helper').value=$('members').value=''};window.delCell=async id=>{if(isAdmin()&&confirm('이 셀을 삭제할까요?'))await deleteDoc(doc(db,'cells',id))};window.editCell=async id=>{if(!isAdmin())return;const c=cells.find(x=>x.id===id);if(!c)return;const name=prompt('셀 이름',c.name);if(name===null)return;const leader=prompt('리더',c.leader||'');if(leader===null)return;const helper=prompt('헬퍼',c.helper||'');if(helper===null)return;const members=prompt('셀원 (쉼표로 구분)',(c.members||[]).join(', '));if(members===null)return;await updateDoc(doc(db,'cells',id),{name:name.trim()||c.name,leader:leader.trim(),helper:helper.trim(),members:members.split(',').map(x=>x.trim()).filter(Boolean)})};
-function renderCells(){$('cellList').innerHTML=cells.length?cells.map(c=>`<div class="cell"><div class="celltop"><div><strong>${esc(c.name)}</strong><div class="muted">리더 ${esc(c.leader||'-')} · 헬퍼 ${esc(c.helper||'-')} · ${people(c).length}명</div></div><div class="actions">${isAdmin()?`<button class="soft" onclick="editCell('${c.id}')">수정</button><button class="danger" onclick="delCell('${c.id}')">삭제</button>`:''}</div></div><div class="chips">${people(c).map(p=>`<span class="chip">${esc(p.name)} · ${p.role}</span>`).join('')}</div></div>`).join(''):'<div class="empty">등록된 셀이 없습니다.</div>'}function renderSelect(){const prev=$('attCell').value;$('attCell').innerHTML='<option value="">셀 선택</option>'+cells.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');if(cells.some(c=>c.id===prev))$('attCell').value=prev;else if(!isAdmin()&&profile?.cellId)$('attCell').value=profile.cellId;$('attCell').disabled=!isAdmin()}$('attCell').onchange=renderAtt;$('attDate').onchange=renderAtt;const attDocId=(date,id)=>`${date}__${id}`;
-function renderAtt(){const c=cells.find(x=>x.id===$('attCell').value),date=$('attDate').value;if(!c){$('attBody').innerHTML='<tr><td colspan="3" class="empty">셀을 선택해주세요.</td></tr>';return}const rec=attendance[attDocId(date,c.id)]?.records||{};$('attBody').innerHTML=people(c).map((p,i)=>{const k=`${p.role}:${p.name}:${i}`,s=rec[k]||'',disabled=canEditAttendance()?'':'disabled';return `<tr data-k="${esc(k)}" data-s="${s}"><td><strong>${esc(p.name)}</strong></td><td>${p.role}</td><td><div class="actions"><button ${disabled} class="att p ${s==='present'?'on':''}" onclick="pick(this,'present')">출석</button><button ${disabled} class="att l ${s==='late'?'on':''}" onclick="pick(this,'late')">지각</button><button ${disabled} class="att a ${s==='absent'?'on':''}" onclick="pick(this,'absent')">결석</button></div></td></tr>`}).join('')}window.pick=(btn,s)=>{if(!canEditAttendance())return;const tr=btn.closest('tr');tr.dataset.s=s;tr.querySelectorAll('.att').forEach(x=>x.classList.remove('on'));btn.classList.add('on')};$('allPresent').onclick=()=>{if(!canEditAttendance())return;document.querySelectorAll('#attBody tr[data-k]').forEach(tr=>{tr.dataset.s='present';tr.querySelectorAll('.att').forEach(x=>x.classList.remove('on'));tr.querySelector('.p')?.classList.add('on')})};$('saveAtt').onclick=async()=>{if(!canEditAttendance())return;const c=cells.find(x=>x.id===$('attCell').value),date=$('attDate').value;if(!c||!date)return alert('날짜와 셀을 선택해주세요.');const records={};document.querySelectorAll('#attBody tr[data-k]').forEach(tr=>records[tr.dataset.k]=tr.dataset.s||'');await setDoc(doc(db,'attendance',attDocId(date,c.id)),{date,cellId:c.id,cellName:c.name,records,updatedAt:Date.now(),updatedBy:currentUser?.email||''});alert('출석이 저장되었습니다.')};
-function renderDash(){const total=cells.reduce((n,c)=>n+people(c).length,0);$('nPeople').textContent=total;$('nCells').textContent=cells.length;const dates=Object.values(attendance).map(x=>x.date).filter(Boolean).sort(),last=dates.at(-1);let present=0,den=0;if(last)Object.values(attendance).filter(x=>x.date===last).forEach(x=>Object.values(x.records||{}).forEach(s=>{if(s){den++;if(s==='present'||s==='late')present++}}));$('rate').textContent=den?Math.round(present/den*100)+'%':'-';$('summary').innerHTML=cells.length?cells.map(c=>`<div class="cell"><div class="celltop"><strong>${esc(c.name)}</strong><span class="badge">${people(c).length}명</span></div><div class="muted" style="margin-top:5px">리더 ${esc(c.leader||'-')} · 헬퍼 ${esc(c.helper||'-')}</div></div>`).join(''):'<div class="empty">표시할 셀이 없습니다.</div>'}
-function renderUsers(){if(!isAdmin()){$('userBody').innerHTML='';return}$('userBody').innerHTML=users.length?users.sort((a,b)=>(a.email||'').localeCompare(b.email||'')).map(u=>{const roleOptions=['pending','admin','leader','helper','viewer'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${roleLabel(r)}</option>`).join(''),cellOptions='<option value="">셀 미지정</option>'+cells.map(c=>`<option value="${c.id}" ${u.cellId===c.id?'selected':''}>${esc(c.name)}</option>`).join(''),owner=(u.email||'').toLowerCase()===OWNER_EMAIL;return `<tr><td>${esc(u.name||'-')}</td><td>${esc(u.email||u.id)}${owner?' <span class="badge">최초 관리자</span>':''}</td><td><select id="role_${u.id}" class="role-select" ${owner?'disabled':''}>${roleOptions}</select></td><td><select id="cell_${u.id}" class="cell-select" ${owner?'disabled':''}>${cellOptions}</select></td><td>${owner?'<span class="muted">고정 관리자</span>':`<button class="soft" onclick="saveUserRole('${u.id}')">저장</button>`}</td></tr>`}).join(''):'<tr><td colspan="5" class="empty">사용자가 없습니다.</td></tr>'}window.saveUserRole=async uid=>{if(!isAdmin())return;const role=$('role_'+uid).value,cellId=$('cell_'+uid).value;if(['leader','helper','viewer'].includes(role)&&!cellId)return alert('해당 역할에는 담당 셀을 지정해주세요.');await updateDoc(doc(db,'users',uid),{role,cellId:role==='admin'||role==='pending'?'':cellId,updatedAt:Date.now(),updatedBy:currentUser?.email||''});alert('사용자 권한이 저장되었습니다.')};
-$('csvBtn').onclick=()=>{if(!isAdmin())return;let rows=[['날짜','셀','역할','이름','상태']];const vals=Object.values(attendance).sort((a,b)=>(a.date||'').localeCompare(b.date||''));if(vals.length){vals.forEach(a=>{const c=cells.find(x=>x.id===a.cellId);if(!c)return;people(c).forEach((p,i)=>rows.push([a.date,c.name,p.role,p.name,a.records?.[`${p.role}:${p.name}:${i}`]||'']))});const ids=new Set(vals.map(a=>a.cellId));cells.filter(c=>!ids.has(c.id)).forEach(c=>people(c).forEach(p=>rows.push(['',c.name,p.role,p.name,''])))}else cells.forEach(c=>people(c).forEach(p=>rows.push(['',c.name,p.role,p.name,''])));const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n'),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='청년부_출석.csv';a.click();URL.revokeObjectURL(url)};function renderAll(){renderCells();renderSelect();renderAtt();renderDash();renderUsers()}renderAll();
+
+const firebaseConfig={
+ apiKey:"AIzaSyBLQ7I3EO4g5VPnY35WZfNpbf3XvWjKit8",
+ authDomain:"youth-attendance-7d46c.firebaseapp.com",
+ projectId:"youth-attendance-7d46c",
+ storageBucket:"youth-attendance-7d46c.firebasestorage.app",
+ messagingSenderId:"210019623751",
+ appId:"1:210019623751:web:6b2597c947e1b96c156262"
+};
+const OWNER="jaehokorea92@gmail.com";
+const fb=initializeApp(firebaseConfig),auth=getAuth(fb),db=getFirestore(fb),$=id=>document.getElementById(id);
+let currentUser=null,profile=null,cells=[],attendance={},users=[],unsubs=[],selectedCellId="";
+
+const today=()=>{const d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)};
+$("attDate").value=$("dashDate").value=today();
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const roleLabel=r=>({admin:"관리자",leader:"셀 리더",helper:"헬퍼",viewer:"조회 전용",pending:"승인 대기"}[r]||r||"-");
+const isAdmin=()=>profile?.role==="admin",canEdit=()=>["admin","leader","helper"].includes(profile?.role);
+
+function memberNames(c){
+ const m=c?.members;
+ if(Array.isArray(m))return m.map(x=>typeof x==="string"?x:(x?.name||"")).map(String).filter(Boolean);
+ if(typeof m==="string")return m.split(/\n|,/).map(x=>x.trim()).filter(Boolean);
+ if(m&&typeof m==="object")return Object.values(m).map(x=>typeof x==="string"?x:(x?.name||"")).map(String).filter(Boolean);
+ return[];
+}
+function people(c){
+ const out=[];
+ if(c?.leader)out.push({name:String(c.leader),role:"리더"});
+ if(c?.helper)out.push({name:String(c.helper),role:"헬퍼"});
+ memberNames(c).forEach(name=>out.push({name,role:"셀원"}));
+ return out;
+}
+const personKey=(p,i)=>`${p.role}:${p.name}:${i}`;
+const attId=(date,id)=>`${date}__${id}`;
+function knownLongSet(c){
+ const raw=new Set(Array.isArray(c?.longAbsentKeys)?c.longAbsentKeys:[]);
+ const valid=new Set();
+ people(c).forEach((p,i)=>{const k=personKey(p,i);if(raw.has(k))valid.add(k)});
+ return valid;
+}
+
+function authView(id){["loginView","signupView","resetView"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+$("goSignup").onclick=()=>authView("signupView");
+$("goReset").onclick=()=>authView("resetView");
+document.querySelectorAll(".backLogin").forEach(b=>b.onclick=()=>authView("loginView"));
+$("showPw").onchange=()=>$("pw").type=$("showPw").checked?"text":"password";
+$("login").onclick=async()=>{try{$("loginMsg").textContent="로그인 중...";await signInWithEmailAndPassword(auth,$("email").value.trim(),$("pw").value);$("loginMsg").textContent=""}catch(e){$("loginMsg").textContent="로그인 실패: "+(e.code||"error")}};
+$("signup").onclick=async()=>{const n=$("sname").value.trim(),e=$("semail").value.trim(),p=$("spw").value;if(!n||!e||p.length<6||p!==$("spw2").value)return $("signupMsg").textContent="입력 내용을 확인해주세요.";try{const c=await createUserWithEmailAndPassword(auth,e,p);await setDoc(doc(db,"users",c.user.uid),{name:n,email:e,role:e.toLowerCase()===OWNER?"admin":"pending",cellId:"",createdAt:Date.now(),updatedAt:Date.now()});$("signupMsg").textContent="계정 신청 완료. 관리자 승인을 기다려주세요."}catch(err){$("signupMsg").textContent="계정 생성 실패: "+(err.code||"error")}};
+$("reset").onclick=async()=>{try{await sendPasswordResetEmail(auth,$("remail").value.trim());$("resetMsg").textContent="재설정 메일을 보냈습니다."}catch(e){$("resetMsg").textContent="메일 발송 실패: "+(e.code||"error")}};
+$("logout").onclick=()=>signOut(auth);
+
+function clearSubs(){unsubs.forEach(f=>{try{f()}catch{}});unsubs=[];cells=[];attendance={};users=[];selectedCellId=""}
+onAuthStateChanged(auth,async u=>{
+ clearSubs();currentUser=u;profile=null;
+ $("app").classList.toggle("hidden",!u);$("userBox").classList.toggle("hidden",!u);
+ if(!u){authView("loginView");return}
+ ["loginView","signupView","resetView"].forEach(x=>$(x).classList.add("hidden"));
+ $("userEmail").textContent=u.email||"";
+ try{
+  const ref=doc(db,"users",u.uid);let s=await getDoc(ref);
+  if(!s.exists()){await setDoc(ref,{name:"",email:u.email||"",role:(u.email||"").toLowerCase()===OWNER?"admin":"pending",cellId:"",createdAt:Date.now(),updatedAt:Date.now()})}
+  unsubs.push(onSnapshot(ref,snap=>{profile=snap.data()||{role:"pending",cellId:""};applyPermissions();startSync()},e=>showFatal(e)));
+ }catch(e){showFatal(e)}
+});
+
+function showFatal(e){console.error(e);$("loginMsg").textContent="데이터 연결 오류: "+(e?.code||e?.message||e)}
+function applyPermissions(){
+ const r=profile?.role||"pending";$("roleBadge").textContent=roleLabel(r);$("pending").classList.toggle("hidden",r!=="pending");$("tabs").classList.toggle("hidden",r==="pending");
+ ["cellsTab","usersTab","dataTab"].forEach(id=>$(id).classList.toggle("hidden",!isAdmin()));
+ $("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());
+ if(r==="pending")document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+}
+function startSync(){
+ if(!profile||profile.role==="pending")return;
+ while(unsubs.length>1){try{unsubs.pop()()}catch{}}
+ if(isAdmin()){
+  unsubs.push(onSnapshot(collection(db,"cells"),s=>{cells=s.docs.map(d=>({id:d.id,...d.data()}));renderCells();renderCellSelect();renderAttendance();renderDash();renderUsers()},e=>console.error("cells",e)));
+  unsubs.push(onSnapshot(collection(db,"attendance"),s=>{attendance={};s.docs.forEach(d=>attendance[d.id]=d.data());renderAttendance();renderDash()},e=>console.error("attendance",e)));
+  unsubs.push(onSnapshot(collection(db,"users"),s=>{users=s.docs.map(d=>({id:d.id,...d.data()}));renderUsers()},e=>console.error("users",e)));
+ }else if(profile.cellId){
+  selectedCellId=profile.cellId;
+  unsubs.push(onSnapshot(doc(db,"cells",profile.cellId),s=>{cells=s.exists()?[{id:s.id,...s.data()}]:[];renderCells();renderCellSelect();renderAttendance();renderDash()},e=>console.error("cell",e)));
+  unsubs.push(onSnapshot(query(collection(db,"attendance"),where("cellId","==",profile.cellId)),s=>{attendance={};s.docs.forEach(d=>attendance[d.id]=d.data());renderAttendance();renderDash()},e=>console.error("attendance",e)));
+ }else{cells=[];renderCells();renderCellSelect();renderAttendance();renderDash()}
+}
+
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab))});
+
+function renderCells(){
+ const box=$("cellList");
+ if(!cells.length){box.innerHTML='<div class="muted">등록된 셀이 없습니다.</div>';return}
+ box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${isAdmin()?`<button class="danger" data-del="${esc(c.id)}">삭제</button>`:""}</div></div>`).join("");
+ box.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(confirm("삭제할까요?"))await deleteDoc(doc(db,"cells",b.dataset.del))});
+}
+function renderCellSelect(){
+ const s=$("attCell");
+ const existing=selectedCellId&&cells.some(c=>c.id===selectedCellId)?selectedCellId:"";
+ if(!isAdmin()&&profile?.cellId)selectedCellId=profile.cellId; else selectedCellId=existing;
+ s.innerHTML='<option value="">셀 선택</option>'+cells.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+ s.value=selectedCellId;s.disabled=!isAdmin();
+}
+$("attCell").addEventListener("change",e=>{selectedCellId=e.target.value;$("attMsg").textContent="";renderAttendance()});
+$("attDate").addEventListener("change",()=>renderAttendance());
+$("dashDate").addEventListener("change",()=>renderDash());
+
+function renderAttendance(){
+ const body=$("attBody"),c=cells.find(x=>x.id===selectedCellId),date=$("attDate").value;
+ if(!c){body.innerHTML='<tr><td colspan="4">셀을 선택해주세요.</td></tr>';return}
+ try{
+  const ppl=people(c),rec=attendance[attId(date,c.id)]?.records||{},ls=knownLongSet(c),editable=canEdit();
+  body.innerHTML="";
+  if(!ppl.length){body.innerHTML='<tr><td colspan="4">등록된 인원이 없습니다.</td></tr>';return}
+  const frag=document.createDocumentFragment();
+  ppl.forEach((p,i)=>{
+   const k=personKey(p,i),state=rec[k]||"",isLong=ls.has(k),tr=document.createElement("tr");
+   tr.dataset.k=k;tr.dataset.s=isLong?"":state;tr.dataset.cell=c.id;if(isLong)tr.className="longrow";
+   const tdName=document.createElement("td"),tdRole=document.createElement("td"),tdState=document.createElement("td"),tdLong=document.createElement("td");
+   const strong=document.createElement("b");strong.textContent=p.name;tdName.appendChild(strong);tdRole.textContent=p.role;
+   const acts=document.createElement("div");acts.className="actions";
+   [["present","출석","p"],["late","지각","l"],["absent","결석","a"]].forEach(([val,label,cls])=>{
+    const b=document.createElement("button");b.type="button";b.className=`att ${cls}${state===val&&!isLong?" on":""}`;b.textContent=label;b.dataset.state=val;b.disabled=!editable||isLong;acts.appendChild(b);
+   });
+   tdState.appendChild(acts);
+   const lb=document.createElement("button");lb.type="button";lb.className=`att x${isLong?" on":""}`;lb.textContent=isLong?"장기결석 해제":"장기결석";lb.dataset.long="1";lb.disabled=!editable;tdLong.appendChild(lb);
+   tr.append(tdName,tdRole,tdState,tdLong);frag.appendChild(tr);
+  });
+  body.appendChild(frag);
+ }catch(e){console.error("renderAttendance",e);body.innerHTML='<tr><td colspan="4" class="error">셀 목록 표시 오류</td></tr>';$("attMsg").textContent="오류: "+(e?.message||e)}
+}
+
+$("attBody").addEventListener("click",async e=>{
+ const b=e.target.closest("button");if(!b||b.disabled||!canEdit())return;
+ const tr=b.closest("tr[data-k]");if(!tr)return;
+ if(b.dataset.state){
+  const same=tr.dataset.s===b.dataset.state;tr.dataset.s=same?"":b.dataset.state;
+  tr.querySelectorAll("[data-state]").forEach(x=>x.classList.remove("on"));if(!same)b.classList.add("on");return;
+ }
+ if(b.dataset.long){
+  const c=cells.find(x=>x.id===tr.dataset.cell);if(!c)return;
+  const set=new Set(Array.isArray(c.longAbsentKeys)?c.longAbsentKeys:[]),k=tr.dataset.k;
+  set.has(k)?set.delete(k):set.add(k);b.disabled=true;
+  try{await updateDoc(doc(db,"cells",c.id),{longAbsentKeys:[...set],longAbsentUpdatedAt:Date.now(),longAbsentUpdatedBy:currentUser?.email||""})}
+  catch(err){b.disabled=false;alert("장기결석 저장 실패: "+(err.code||err.message))}
+ }
+});
+$("allPresent").onclick=()=>{if(!canEdit())return;document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>{if(tr.classList.contains("longrow"))return;tr.dataset.s="present";tr.querySelectorAll("[data-state]").forEach(x=>x.classList.remove("on"));tr.querySelector('[data-state="present"]')?.classList.add("on")})};
+$("saveAtt").onclick=async()=>{
+ const c=cells.find(x=>x.id===selectedCellId),date=$("attDate").value;if(!c||!date||!canEdit())return;
+ const records={};document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>records[tr.dataset.k]=tr.classList.contains("longrow")?"":(tr.dataset.s||""));
+ try{await setDoc(doc(db,"attendance",attId(date,c.id)),{date,cellId:c.id,cellName:c.name,records,updatedAt:Date.now(),updatedBy:currentUser?.email||""});$("attMsg").innerHTML='<span class="ok">출석 저장 완료</span>'}
+ catch(e){$("attMsg").innerHTML='<span class="error">출석 저장 실패: '+esc(e.code||e.message)+'</span>'}
+};
+
+function cellStatus(c,date){
+ const ppl=people(c),ls=knownLongSet(c),rec=attendance[attId(date,c.id)]?.records||{};
+ const names={present:[],late:[],absent:[],long:[],missing:[]};let p=0,l=0,a=0,m=0,x=0;
+ const displayName=person=>person.role==="셀원"?person.name:`${person.name} (${person.role})`;
+ ppl.forEach((person,i)=>{
+  const k=personKey(person,i),name=displayName(person);
+  if(ls.has(k)){x++;names.long.push(name);return}
+  const state=rec[k];
+  if(state==="present"){p++;names.present.push(name)}
+  else if(state==="late"){l++;names.late.push(name)}
+  else if(state==="absent"){a++;names.absent.push(name)}
+  else{m++;names.missing.push(name)}
+ });
+ return{total:ppl.length,eligible:ppl.length-x,p,l,a,m,x,has:!!attendance[attId(date,c.id)],names};
+}
+function nameChips(list){return list.length?list.map(n=>`<span class="name-chip">${esc(n)}</span>`).join(""):'<span class="roster-empty">없음</span>'}
+function renderDash(){
+ const date=$("dashDate").value||today();$("nPeople").textContent=cells.reduce((n,c)=>n+people(c).length,0);$("nCells").textContent=cells.length;
+ let P=0,L=0,A=0,M=0,X=0,E=0;cells.forEach(c=>{const s=cellStatus(c,date);P+=s.p;L+=s.l;A+=s.a;M+=s.m;X+=s.x;E+=s.eligible});
+ $("rate").textContent=E?Math.round(P/E*100)+"%":"-";$("rateNote").textContent=`${date} · 출석 ${P} · 지각 ${L} · 결석 ${A} · 장기결석 ${X} · 미체크 ${M}`;
+ $("summary").innerHTML=cells.length?cells.map(c=>{
+  const s=cellStatus(c,date),r=s.eligible?Math.round(s.p/s.eligible*100):0;
+  return `<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">전체 ${s.total}명 · 출석대상 ${s.eligible}명</div></div><b style="font-size:22px;color:var(--p)">${s.has?r+"%":"-"}</b></div><div class="metrics"><span class="metric mp">출석 ${s.p}</span><span class="metric ml">지각 ${s.l}</span><span class="metric ma">결석 ${s.a}</span><span class="metric mx">장기결석 ${s.x}</span><span class="metric mm">미체크 ${s.m}</span></div><div class="progress"><span style="width:${s.has?r:0}%"></span></div><details class="roster" open><summary>명단 보기 · ${s.total}명</summary><div class="roster-grid"><div class="roster-group"><div class="roster-title p">출석 ${s.p}</div><div class="name-list">${nameChips(s.names.present)}</div></div><div class="roster-group"><div class="roster-title l">지각 ${s.l}</div><div class="name-list">${nameChips(s.names.late)}</div></div><div class="roster-group"><div class="roster-title a">결석 ${s.a}</div><div class="name-list">${nameChips(s.names.absent)}</div></div><div class="roster-group"><div class="roster-title x">장기결석 ${s.x}</div><div class="name-list">${nameChips(s.names.long)}</div></div><div class="roster-group"><div class="roster-title m">미체크 ${s.m}</div><div class="name-list">${nameChips(s.names.missing)}</div></div></div></details></div>`
+ }).join(""):'<div class="muted">표시할 셀이 없습니다.</div>';
+}
+
+$("addCell").onclick=async()=>{if(!isAdmin())return;const name=$("cellName").value.trim();if(!name)return alert("셀 이름을 입력해주세요.");const members=$("members").value.split(/\n|,/).map(x=>x.trim()).filter(Boolean);await addDoc(collection(db,"cells"),{name,leader:$("leader").value.trim(),helper:$("helper").value.trim(),members,longAbsentKeys:[],createdAt:Date.now()});$("cellName").value=$("leader").value=$("helper").value=$("members").value=""};
+
+function renderUsers(){
+ if(!isAdmin())return;
+ $("userBody").innerHTML=users.map(u=>{const ro=["pending","admin","leader","helper","viewer"].map(r=>`<option value="${r}" ${u.role===r?"selected":""}>${roleLabel(r)}</option>`).join(""),co='<option value="">셀 미지정</option>'+cells.map(c=>`<option value="${esc(c.id)}" ${u.cellId===c.id?"selected":""}>${esc(c.name)}</option>`).join(""),owner=(u.email||"").toLowerCase()===OWNER;return `<tr><td>${esc(u.name||"-")}</td><td>${esc(u.email||"")}</td><td><select data-role="${u.id}" ${owner?"disabled":""}>${ro}</select></td><td><select data-cell="${u.id}" ${owner?"disabled":""}>${co}</select></td><td>${owner?"고정 관리자":`<button class="soft" data-save-user="${u.id}">저장</button>`}</td></tr>`}).join("");
+ $("userBody").querySelectorAll("[data-save-user]").forEach(b=>b.onclick=async()=>{const id=b.dataset.saveUser,role=document.querySelector(`[data-role="${id}"]`).value,cellId=document.querySelector(`[data-cell="${id}"]`).value;if(["leader","helper","viewer"].includes(role)&&!cellId)return alert("담당 셀을 지정해주세요.");await updateDoc(doc(db,"users",id),{role,cellId:["admin","pending"].includes(role)?"":cellId,updatedAt:Date.now()});alert("사용자 권한이 저장되었습니다.")});
+}
+$("csv").onclick=()=>{
+ let rows=[["날짜","셀","역할","이름","상태","장기결석"]];const vals=Object.values(attendance).sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+ if(vals.length)vals.forEach(a=>{const c=cells.find(x=>x.id===a.cellId);if(!c)return;const ls=knownLongSet(c);people(c).forEach((p,i)=>{const k=personKey(p,i);rows.push([a.date,c.name,p.role,p.name,a.records?.[k]||"",ls.has(k)?"Y":""])})});
+ else cells.forEach(c=>{const ls=knownLongSet(c);people(c).forEach((p,i)=>rows.push(["",c.name,p.role,p.name,"",ls.has(personKey(p,i))?"Y":""]))});
+ const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n"),url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})),a=document.createElement("a");a.href=url;a.download="청년부_출석.csv";a.click();URL.revokeObjectURL(url);
+};
+
+renderCells();renderCellSelect();renderAttendance();renderDash();
 </script>
 </body>
 </html>
