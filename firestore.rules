@@ -28,12 +28,16 @@ service cloud.firestore {
     function canEditOwnAttendance() {
       return hasProfile() && myRole() in ['leader', 'helper'];
     }
+    function canUpdateOwnLongAbsence(cellId) {
+      return canEditOwnAttendance()
+             && myCell() == cellId
+             && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['longAbsentKeys', 'longAbsentUpdatedAt', 'longAbsentUpdatedBy']);
+    }
 
     match /users/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
 
-      // 최초 로그인 시 자신의 프로필만 생성할 수 있습니다.
-      // 최초 관리자 이메일은 admin, 그 외 계정은 pending으로 시작합니다.
       allow create: if signedIn()
                     && request.auth.uid == uid
                     && request.resource.data.email == request.auth.token.email
@@ -42,13 +46,13 @@ service cloud.firestore {
                       || (!ownerEmail() && request.resource.data.role == 'pending' && request.resource.data.cellId == '')
                     );
 
-      // 역할/담당 셀 변경은 관리자만 가능합니다.
       allow update, delete: if isAdmin();
     }
 
     match /cells/{cellId} {
       allow read: if isAdmin() || (isApproved() && myCell() == cellId);
-      allow create, update, delete: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || canUpdateOwnLongAbsence(cellId);
     }
 
     match /attendance/{attendanceId} {
