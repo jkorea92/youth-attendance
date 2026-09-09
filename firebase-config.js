@@ -1,6 +1,6 @@
 // Firebase web app configuration for youth-attendance
 export const firebaseConfig = {
-  apiKey: "AIzaSyBlQZ73EO4g5VPnY35WZfNpbf3XvWjKit8",
+  apiKey: "AIzaSyBLQ7I3E04g5VPnY35WZfNpbf3XvWjKit8",
   authDomain: "youth-attendance-7d46c.firebaseapp.com",
   projectId: "youth-attendance-7d46c",
   storageBucket: "youth-attendance-7d46c.firebasestorage.app",
