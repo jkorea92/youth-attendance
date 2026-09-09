@@ -23,7 +23,7 @@ service cloud.firestore {
       return ownerEmail() || (hasProfile() && myRole() == 'admin');
     }
     function isApproved() {
-      return hasProfile() && myRole() in ['admin', 'leader', 'helper', 'viewer'];
+      return hasProfile() && myRole() in ['admin', 'leader', 'helper', 'member', 'viewer'];
     }
     function canEditOwnAttendance() {
       return hasProfile() && myRole() in ['leader', 'helper'];
