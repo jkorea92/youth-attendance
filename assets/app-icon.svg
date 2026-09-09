@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="퍼스백양장로교회 앱 아이콘">
+  <rect width="256" height="256" fill="#fff"/>
+  <g transform="translate(38.5 45)">
+    <path d="M20 92c35-30 72-30 108 0-36-12-72-12-108 0z" fill="#8eb5dc"/>
+    <path d="M10 118c43-29 85-27 126 4-43-9-84-10-126-4z" fill="#5c8fc6"/>
+    <path d="M0 145c50-23 99-20 146 9-50-5-98-7-146-9z" fill="#326cae"/>
+    <rect x="124" y="8" width="22" height="150" rx="3" fill="#d92b2b"/>
+    <rect x="91" y="45" width="88" height="22" rx="3" fill="#d92b2b"/>
+  </g>
+</svg>
