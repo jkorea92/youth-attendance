@@ -1,9 +1,10 @@
 name: Apply mobile optimisation
 
-"on":
+on:
   push:
     paths:
       - '.github/workflows/mobile-optimise.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -13,10 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch mobile CSS
+        with:
+          fetch-depth: 0
+      - name: Patch production and backup HTML
         shell: bash
         run: |
-          python3 - <<'PY'
+          python - <<'PY'
           from pathlib import Path
           css = '''
 /* mobile-optimisation-20260909 */
@@ -34,8 +37,15 @@ body{font-size:15px}header{padding:12px 0}.wrap{padding-left:12px;padding-right:
                   s=s.replace('</style>', css+'\n</style>', 1)
               p.write_text(s,encoding='utf-8')
           PY
+      - name: Commit mobile optimisation
+        shell: bash
+        run: |
+          if git diff --quiet -- index.html app-v4.html; then
+            echo "No HTML changes needed"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html app-v4.html
-          git diff --cached --quiet || git commit -m "Optimise mobile layout and logo sizing"
+          git commit -m "Optimise mobile layout and logo sizing"
           git push
