@@ -13,19 +13,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Restore visible logo and bust cache
+      - name: Switch app to reliable vector logo
         run: |
-          git show b662367236fed09f45e394d656bad96bf4353ccd:assets/church-logo.png > assets/church-logo.png
           python3 - <<'PY'
           from pathlib import Path
+          import re
           for name in ['index.html','app-v4.html']:
               p=Path(name)
               s=p.read_text(encoding='utf-8')
-              s=s.replace('assets/church-logo.png"', 'assets/church-logo.png?v=logo-visible-20260909"')
+              s=re.sub(r'assets/church-logo\.png(?:\?[^"\']*)?', 'assets/church-logo.svg?v=vector-20260909', s)
               p.write_text(s,encoding='utf-8')
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/church-logo.png index.html app-v4.html
-          git commit -m 'Restore visible church logo and bust cache' || exit 0
+          git add index.html app-v4.html
+          git commit -m 'Use vector church logo in app' || exit 0
           git push
