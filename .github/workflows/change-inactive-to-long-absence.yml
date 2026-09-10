@@ -1,0 +1,21 @@
+name: Change inactive to long absence
+on:
+  push:
+    paths:
+      - 'scripts/change_inactive_to_long_absence.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/change_inactive_to_long_absence.py
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html app-v4.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Use long absence participation and show it on dashboard'
+          git push
