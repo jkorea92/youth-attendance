@@ -243,10 +243,15 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
   #loginView label:has(#showPw){gap:9px!important;margin-top:13px!important;font-size:14px!important}
 }
 
+
+/* brand-home-click-20260910 */
+#homeBrand{cursor:pointer;user-select:none}
+#homeBrand:focus-visible{outline:3px solid rgba(255,255,255,.85);outline-offset:5px;border-radius:12px}
+
 </style>
 </head>
 <body>
-<header><div class="wrap top"><div class="brandarea"><img src="assets/church-logo.svg?v=vector-20260909" alt="퍼스백양장로교회 로고" class="church-logo"><div class="brandcopy"><div class="brand">청년부 출석관리</div></div></div><div id="userBox" class="user hidden"><span id="userEmail"></span><span id="roleBadge" class="badge"></span><button id="logout" class="soft">로그아웃</button></div></div></header>
+<header><div class="wrap top"><div id="homeBrand" class="brandarea" role="button" tabindex="0" aria-label="대시보드로 이동"><img src="assets/church-logo.svg?v=vector-20260909" alt="퍼스백양장로교회 로고" class="church-logo"><div class="brandcopy"><div class="brand">청년부 출석관리</div></div></div><div id="userBox" class="user hidden"><span id="userEmail"></span><span id="roleBadge" class="badge"></span><button id="logout" class="soft">로그아웃</button></div></div></header>
 <div class="wrap">
 <section id="loginView" class="auth card" aria-label="로그인"><label>이메일</label><input id="email" type="email"><label>비밀번호</label><input id="pw" type="password"><label><input id="showPw" type="checkbox" style="width:auto"> 비밀번호 보기</label><button id="login" class="primary w100">로그인</button><button id="goSignup" class="soft w100">계정 신청</button><button id="goReset" class="soft w100">비밀번호 찾기</button><div id="loginMsg" class="status"></div></section>
 <section id="signupView" class="auth card hidden"><h2>계정 신청</h2><div class="muted">가입 후 관리자 승인 전까지는 출석 데이터에 접근할 수 없습니다.</div><label>이름</label><input id="sname"><label>이메일</label><input id="semail" type="email"><label>비밀번호</label><input id="spw" type="password"><label>비밀번호 확인</label><input id="spw2" type="password"><button id="signup" class="primary w100">계정 만들기</button><button class="soft w100 backLogin">로그인으로 돌아가기</button><div id="signupMsg" class="status"></div></section>
@@ -386,7 +391,27 @@ function startSync(){
  }else{cells=[];renderCells();renderCellSelect();renderAttendance();renderDash()}
 }
 
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab))});
+function activeTabId(){return document.querySelector(".tab.active")?.dataset.tab||"dash"}
+function refreshTabState(tabId){
+ try{
+  if(tabId==="dash")renderDash();
+  else if(tabId==="attend")renderAttendance();
+  else if(tabId==="cells"){resetCellForm();renderCells();}
+  else if(tabId==="users")renderUsers();
+ }catch(e){console.error("tab refresh",tabId,e)}
+}
+function switchTab(tabId){
+ const previous=activeTabId();
+ if(previous!==tabId)refreshTabState(previous);
+ const target=[...document.querySelectorAll(".tab")].find(x=>x.dataset.tab===tabId&&!x.classList.contains("hidden"));
+ if(!target)return;
+ document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===target));
+ document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id===tabId));
+ if(tabId==="dash")renderDash();
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+$("homeBrand").onclick=()=>switchTab("dash");
+$("homeBrand").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();switchTab("dash")}};
 
 let editingCellId="";
 function memberRowHtml(m={}){
