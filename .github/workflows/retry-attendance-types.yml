@@ -1,0 +1,29 @@
+name: Retry attendance participation model
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/retry-attendance-types.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run patch with safe regex replacement
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/apply_attendance_types.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('out, n = re.subn(pattern, repl, s, count=1, flags=re.S)', 'out, n = re.subn(pattern, lambda m: repl, s, count=1, flags=re.S)')
+          p.write_text(s,encoding='utf-8')
+          PY
+          python3 scripts/apply_attendance_types.py
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html app-v4.html
+          git commit -m 'Add worship and cell attendance types with member notes' || exit 0
+          git push
