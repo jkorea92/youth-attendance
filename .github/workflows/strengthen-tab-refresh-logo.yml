@@ -1,0 +1,29 @@
+name: Strengthen tab refresh and logo home
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/strengthen-tab-refresh-logo.py'
+      - '.github/workflows/strengthen-tab-refresh-logo.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/strengthen-tab-refresh-logo.py
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo 'No changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html app-v4.html
+          git commit -m 'Make tab resets and logo dashboard navigation reliable'
+          git push
