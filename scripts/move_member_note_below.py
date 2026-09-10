@@ -23,3 +23,5 @@ for path in FILES:
     s = s.replace(old_mobile, new_mobile, 1)
     s = s.replace(old_html, new_html, 1)
     path.write_text(s, encoding='utf-8')
+
+# trigger workflow after it has been installed
