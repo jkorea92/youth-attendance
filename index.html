@@ -164,7 +164,8 @@ onAuthStateChanged(auth,async u=>{
 function showFatal(e){console.error(e);$("loginMsg").textContent="데이터 연결 오류: "+(e?.code||e?.message||e)}
 function applyPermissions(){
  const r=profile?.role||"pending";$("roleBadge").textContent=roleLabel(r);$("pending").classList.toggle("hidden",r!=="pending");$("tabs").classList.toggle("hidden",r==="pending");
- ["cellsTab","usersTab","dataTab"].forEach(id=>$(id).classList.toggle("hidden",!isAdmin()));
+ $("cellsTab").classList.toggle("hidden",!(isAdmin()||canEdit()));
+ ["usersTab","dataTab"].forEach(id=>$(id).classList.toggle("hidden",!isAdmin()));
  $("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());
  if(r==="pending")document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
 }
@@ -188,26 +189,37 @@ let editingCellId="";
 function resetCellForm(){
  editingCellId="";
  $("cellName").value=$("leader").value=$("helper").value=$("members").value="";
- $("cellFormTitle").textContent="새 셀 등록";
- $("addCell").textContent="새 셀 저장";
+ $("cellName").disabled=$("leader").disabled=$("helper").disabled=false;
+ if(isAdmin()){
+  $("cellFormTitle").textContent="새 셀 등록";
+  $("addCell").textContent="새 셀 저장";
+  $("addCell").classList.remove("hidden");
+ }else{
+  $("cellFormTitle").textContent="내 셀 명단 관리";
+  $("addCell").textContent="셀원 명단 저장";
+  $("addCell").classList.add("hidden");
+ }
  $("cancelCellEdit").classList.add("hidden");
 }
 function editCell(id){
  const c=cells.find(x=>x.id===id);if(!c)return;
+ if(!isAdmin()&&id!==profile?.cellId)return;
  editingCellId=id;
  $("cellName").value=c.name||"";
  $("leader").value=c.leader||"";
  $("helper").value=c.helper||"";
  $("members").value=(Array.isArray(c.members)?c.members:[]).join("\n");
- $("cellFormTitle").textContent=`${c.name||"셀"} 수정`;
- $("addCell").textContent="변경사항 저장";
+ $("cellName").disabled=$("leader").disabled=$("helper").disabled=!isAdmin();
+ $("cellFormTitle").textContent=isAdmin()?`${c.name||"셀"} 수정`:`${c.name||"셀"} 셀원 관리`;
+ $("addCell").textContent=isAdmin()?"변경사항 저장":"셀원 명단 저장";
+ $("addCell").classList.remove("hidden");
  $("cancelCellEdit").classList.remove("hidden");
- $("cellName").scrollIntoView({behavior:"smooth",block:"center"});
+ $("members").scrollIntoView({behavior:"smooth",block:"center"});
 }
 function renderCells(){
  const box=$("cellList");
  if(!cells.length){box.innerHTML='<div class="muted">등록된 셀이 없습니다.</div>';return}
- box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${isAdmin()?`<div class="actions"><button class="soft" data-edit="${esc(c.id)}">수정</button><button class="danger" data-del="${esc(c.id)}">삭제</button></div>`:""}</div></div>`).join("");
+ box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${(isAdmin()||canEdit())?`<div class="actions"><button class="soft" data-edit="${esc(c.id)}">${isAdmin()?"수정":"셀원 관리"}</button>${isAdmin()?`<button class="danger" data-del="${esc(c.id)}">삭제</button>`:""}</div>`:""}</div></div>`).join("");
  box.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editCell(b.dataset.edit));
  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(confirm("삭제할까요?")){await deleteDoc(doc(db,"cells",b.dataset.del));if(editingCellId===b.dataset.del)resetCellForm()}});
 }
@@ -297,11 +309,19 @@ function renderDash(){
 }
 
 $("addCell").onclick=async()=>{
- if(!isAdmin())return;
- const name=$("cellName").value.trim();
- if(!name)return alert("셀 이름을 입력해주세요.");
  const members=$("members").value.split(/\n|,/).map(x=>x.trim()).filter(Boolean);
- const data={name,leader:$("leader").value.trim(),helper:$("helper").value.trim(),members,updatedAt:Date.now()};
+ if(!isAdmin()){
+  if(!canEdit()||!editingCellId||editingCellId!==profile?.cellId)return alert("자신의 셀원 명단만 수정할 수 있습니다.");
+  try{
+   await updateDoc(doc(db,"cells",editingCellId),{members,updatedAt:Date.now()});
+   alert("셀원 명단이 수정되었습니다.");
+   resetCellForm();
+  }catch(e){console.error(e);alert("셀원 저장 실패: "+(e.code||e.message||e))}
+  return;
+ }
+ const cellName=$("cellName").value.trim();
+ if(!cellName)return alert("셀 이름을 입력해주세요.");
+ const data={name:cellName,leader:$("leader").value.trim(),helper:$("helper").value.trim(),members,updatedAt:Date.now()};
  try{
   if(editingCellId){
    await updateDoc(doc(db,"cells",editingCellId),data);
