@@ -1,0 +1,132 @@
+name: Restrict cell management
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/restrict-cell-management.yml'
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply role-restricted cell management
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['index.html','app-v4.html']:
+              p=Path(name)
+              s=p.read_text(encoding='utf-8')
+
+              old='''function applyPermissions(){
+ const r=profile?.role||"pending";$("roleBadge").textContent=roleLabel(r);$("pending").classList.toggle("hidden",r!=="pending");$("tabs").classList.toggle("hidden",r==="pending");
+ ["cellsTab","usersTab","dataTab"].forEach(id=>$(id).classList.toggle("hidden",!isAdmin()));
+ $("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());
+ if(r==="pending")document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+}'''
+              new='''function applyPermissions(){
+ const r=profile?.role||"pending";$("roleBadge").textContent=roleLabel(r);$("pending").classList.toggle("hidden",r!=="pending");$("tabs").classList.toggle("hidden",r==="pending");
+ $("cellsTab").classList.toggle("hidden",!(isAdmin()||canEdit()));
+ ["usersTab","dataTab"].forEach(id=>$(id).classList.toggle("hidden",!isAdmin()));
+ $("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());
+ if(r==="pending")document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+}'''
+              if old not in s: raise SystemExit(f'applyPermissions not found in {name}')
+              s=s.replace(old,new,1)
+
+              old='''function resetCellForm(){
+ editingCellId="";
+ $("cellName").value=$("leader").value=$("helper").value=$("members").value="";
+ $("cellFormTitle").textContent="새 셀 등록";
+ $("addCell").textContent="새 셀 저장";
+ $("cancelCellEdit").classList.add("hidden");
+}'''
+              new='''function resetCellForm(){
+ editingCellId="";
+ $("cellName").value=$("leader").value=$("helper").value=$("members").value="";
+ $("cellName").disabled=$("leader").disabled=$("helper").disabled=false;
+ if(isAdmin()){
+  $("cellFormTitle").textContent="새 셀 등록";
+  $("addCell").textContent="새 셀 저장";
+  $("addCell").classList.remove("hidden");
+ }else{
+  $("cellFormTitle").textContent="내 셀 명단 관리";
+  $("addCell").textContent="셀원 명단 저장";
+  $("addCell").classList.add("hidden");
+ }
+ $("cancelCellEdit").classList.add("hidden");
+}'''
+              if old not in s: raise SystemExit(f'resetCellForm not found in {name}')
+              s=s.replace(old,new,1)
+
+              old='''function editCell(id){
+ const c=cells.find(x=>x.id===id);if(!c)return;
+ editingCellId=id;
+ $("cellName").value=c.name||"";
+ $("leader").value=c.leader||"";
+ $("helper").value=c.helper||"";
+ $("members").value=(Array.isArray(c.members)?c.members:[]).join("\\n");
+ $("cellFormTitle").textContent=`${c.name||"셀"} 수정`;
+ $("addCell").textContent="변경사항 저장";
+ $("cancelCellEdit").classList.remove("hidden");
+ $("cellName").scrollIntoView({behavior:"smooth",block:"center"});
+}'''
+              new='''function editCell(id){
+ const c=cells.find(x=>x.id===id);if(!c)return;
+ if(!isAdmin()&&id!==profile?.cellId)return;
+ editingCellId=id;
+ $("cellName").value=c.name||"";
+ $("leader").value=c.leader||"";
+ $("helper").value=c.helper||"";
+ $("members").value=(Array.isArray(c.members)?c.members:[]).join("\\n");
+ $("cellName").disabled=$("leader").disabled=$("helper").disabled=!isAdmin();
+ $("cellFormTitle").textContent=isAdmin()?`${c.name||"셀"} 수정`:`${c.name||"셀"} 셀원 관리`;
+ $("addCell").textContent=isAdmin()?"변경사항 저장":"셀원 명단 저장";
+ $("addCell").classList.remove("hidden");
+ $("cancelCellEdit").classList.remove("hidden");
+ $("members").scrollIntoView({behavior:"smooth",block:"center"});
+}'''
+              if old not in s: raise SystemExit(f'editCell not found in {name}')
+              s=s.replace(old,new,1)
+
+              old=''' box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${isAdmin()?`<div class="actions"><button class="soft" data-edit="${esc(c.id)}">수정</button><button class="danger" data-del="${esc(c.id)}">삭제</button></div>`:""}</div></div>`).join("");'''
+              new=''' box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${(isAdmin()||canEdit())?`<div class="actions"><button class="soft" data-edit="${esc(c.id)}">${isAdmin()?"수정":"셀원 관리"}</button>${isAdmin()?`<button class="danger" data-del="${esc(c.id)}">삭제</button>`:""}</div>`:""}</div></div>`).join("");'''
+              if old not in s: raise SystemExit(f'renderCells line not found in {name}')
+              s=s.replace(old,new,1)
+
+              start=s.index('$("addCell").onclick=async()=>{')
+              end=s.index('\n$("cancelCellEdit").onclick=resetCellForm;',start)
+              new_handler='''$("addCell").onclick=async()=>{
+ const members=$("members").value.split(/\\n|,/).map(x=>x.trim()).filter(Boolean);
+ if(!isAdmin()){
+  if(!canEdit()||!editingCellId||editingCellId!==profile?.cellId)return alert("자신의 셀원 명단만 수정할 수 있습니다.");
+  try{
+   await updateDoc(doc(db,"cells",editingCellId),{members,updatedAt:Date.now()});
+   alert("셀원 명단이 수정되었습니다.");
+   resetCellForm();
+  }catch(e){console.error(e);alert("셀원 저장 실패: "+(e.code||e.message||e))}
+  return;
+ }
+ const cellName=$("cellName").value.trim();
+ if(!cellName)return alert("셀 이름을 입력해주세요.");
+ const data={name:cellName,leader:$("leader").value.trim(),helper:$("helper").value.trim(),members,updatedAt:Date.now()};
+ try{
+  if(editingCellId){
+   await updateDoc(doc(db,"cells",editingCellId),data);
+   alert("기존 셀 명단이 수정되었습니다.");
+  }else{
+   await addDoc(collection(db,"cells"),{...data,longAbsentKeys:[],createdAt:Date.now()});
+   alert("새 셀이 등록되었습니다.");
+  }
+  resetCellForm();
+ }catch(e){console.error(e);alert("셀 저장 실패: "+(e.code||e.message||e))}
+};'''
+              s=s[:start]+new_handler+s[end:]
+              p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html app-v4.html
+          git commit -m 'Restrict leaders and helpers to own cell roster' || exit 0
+          git push
