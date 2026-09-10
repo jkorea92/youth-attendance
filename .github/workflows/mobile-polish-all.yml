@@ -1,0 +1,24 @@
+name: Mobile polish all sections
+on:
+  push:
+    paths:
+      - 'scripts/mobile_polish_all_sections.py'
+      - '.github/workflows/mobile-polish-all.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/mobile_polish_all_sections.py
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html app-v4.html
+          git diff --cached --quiet || git commit -m 'Polish all mobile layouts and attendance cards'
+          git push
