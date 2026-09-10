@@ -61,6 +61,78 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 .member-editor{display:flex;flex-direction:column;gap:8px;margin-top:8px}.member-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,.85fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:11px;background:#fff}.member-row input,.member-row select,.member-row textarea{min-width:0}.member-row [data-member-note]{grid-column:1 / -1;min-height:76px;resize:vertical;line-height:1.45}.member-row .danger{align-self:stretch}.member-summary{display:flex;flex-direction:column;gap:6px;margin-top:9px}.member-summary-row{display:grid;grid-template-columns:minmax(90px,.8fr) minmax(90px,.7fr) minmax(0,1.5fr);gap:8px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:12px}.part-badge{display:inline-block;padding:4px 7px;border-radius:999px;background:#eef2ff;color:var(--p);font-size:11px;font-weight:800}.na{font-size:12px;color:var(--muted);font-weight:700}.track-title{font-size:11px;font-weight:900;color:#475467;margin-bottom:5px}.dual-rate{font-size:21px!important;line-height:1.35}.status-section{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}.status-section-title{font-size:12px;font-weight:900;margin-bottom:7px}
 @media(max-width:760px){.member-row{grid-template-columns:minmax(0,1fr) minmax(112px,.9fr)}.member-row [data-member-note]{grid-column:1 / -1;min-height:92px}.member-row .danger{grid-column:1 / -1}.member-summary-row{grid-template-columns:1fr 1fr}.member-summary-row span:last-child{grid-column:1 / -1}#attBody td{grid-template-columns:88px minmax(0,1fr)}#attBody td:nth-child(1)::before{content:'이름'}#attBody td:nth-child(2)::before{content:'역할'}#attBody td:nth-child(3)::before{content:'참여'}#attBody td:nth-child(4)::before{content:'예배'}#attBody td:nth-child(5)::before{content:'셀 모임'}#attBody td:nth-child(6)::before{content:'장기결석'}#attBody td:nth-child(n+1)::before{font-size:11px;font-weight:800;color:var(--muted)}#attBody td:nth-child(3),#attBody td:nth-child(4),#attBody td:nth-child(5),#attBody td:nth-child(6){white-space:normal}#attBody .actions{grid-template-columns:repeat(3,minmax(66px,1fr))}}
 
+
+
+/* mobile-polish-all-20260910 */
+@media(max-width:760px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{-webkit-text-size-adjust:100%;font-size:15px}
+  .wrap{width:100%;max-width:100%;padding-left:10px;padding-right:10px}
+  header{padding:10px 0}
+  .top{gap:8px}
+  .brandarea{gap:6px}
+  .church-logo{width:min(235px,76vw);margin:0 auto;padding:4px 6px}
+  .brand{font-size:16px}.sub{font-size:10.5px}
+  .user{font-size:11px;gap:5px}.badge{font-size:10px;padding:4px 7px}.user button{padding:8px 10px;min-height:36px}
+
+  .tabs{width:calc(100vw - 20px);margin:10px 0 12px;padding:4px;gap:3px;border-radius:12px}
+  .tab{padding:9px 11px;min-height:38px;font-size:13px}
+
+  .grid{display:block}
+  .grid>.card{width:100%;margin-bottom:10px}
+  .card{padding:13px;border-radius:14px}
+  h2{font-size:24px;line-height:1.25;margin-bottom:16px}h3{font-size:19px;line-height:1.3}
+  label{font-size:13px;margin-top:11px}
+  input,select,textarea{font-size:16px;width:100%;max-width:100%;min-width:0}
+  button{font-size:14px}
+  .row{grid-template-columns:minmax(0,1fr);gap:8px}
+  .actions{gap:6px;max-width:100%}
+
+  #attend .card:first-child .row{grid-template-columns:1fr}
+  #attend .card:first-child .actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  #allPresent,#saveAtt{width:100%;min-width:0}
+
+  #attend .table{width:100%;max-width:100%;overflow:visible}
+  #attBody{width:100%}
+  #attBody tr{padding:11px 10px;margin-bottom:10px;overflow:hidden}
+  #attBody td{display:grid!important;grid-template-columns:72px minmax(0,1fr)!important;gap:8px;width:100%;max-width:100%;padding:7px 0!important;align-items:start;white-space:normal!important}
+  #attBody td::before{min-width:0;white-space:nowrap;line-height:1.35;padding-top:5px}
+  #attBody td>*,#attBody td .actions{min-width:0;max-width:100%}
+  #attBody td:nth-child(1) b{font-size:17px;line-height:1.35}
+  #attBody .part-badge{display:inline-flex;align-items:center;justify-content:center;max-width:100%;white-space:normal;word-break:keep-all;text-align:center;line-height:1.25;padding:6px 9px}
+  #attBody .actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px;width:100%;max-width:100%}
+  #attBody .att{width:100%!important;min-width:0!important;max-width:100%;padding:9px 3px!important;font-size:12px!important;line-height:1.2;white-space:nowrap!important}
+  #attBody td:nth-child(6) .actions{grid-template-columns:1fr!important}
+  #attBody td:nth-child(6) .att{width:100%!important;min-width:0!important}
+
+  #cells .card[style]{width:100%;max-width:100%}
+  .member-row{grid-template-columns:minmax(0,1fr)!important;gap:7px}
+  .member-row [data-member-name],.member-row [data-member-part],.member-row [data-member-note],.member-row .danger{grid-column:1/-1!important;width:100%}
+  .member-row [data-member-note]{min-height:96px}
+  .member-summary-row{grid-template-columns:1fr!important;gap:5px}
+  .member-summary-row>*{grid-column:1/-1!important;min-width:0}
+  .cell{padding:11px}.celltop{flex-direction:column;align-items:stretch}.celltop>.actions{width:100%}.celltop>.actions button{flex:1}
+
+  #users .table{width:100%;max-width:100%;overflow-x:auto}
+  #users table{min-width:620px;font-size:12px}#users th,#users td{padding:8px}
+
+  .roster-grid{grid-template-columns:1fr!important}.roster-group{min-width:0}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}.metric{text-align:center;white-space:normal!important;line-height:1.25}
+  .name-chip{white-space:normal!important;line-height:1.25}
+  .dual-rate{font-size:18px!important}
+  .stat{font-size:25px}
+}
+@media(max-width:390px){
+  .wrap{padding-left:8px;padding-right:8px}
+  .tabs{width:calc(100vw - 16px)}
+  .tab{padding:8px 9px;font-size:12px}
+  .card{padding:11px}
+  #attBody tr{padding:9px 8px}
+  #attBody td{grid-template-columns:64px minmax(0,1fr)!important;gap:6px}
+  #attBody .att{font-size:11.5px!important;padding:8px 2px!important}
+  .metrics{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
