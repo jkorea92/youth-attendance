@@ -34,6 +34,12 @@ service cloud.firestore {
              && request.resource.data.diff(resource.data).affectedKeys()
                   .hasOnly(['longAbsentKeys', 'longAbsentUpdatedAt', 'longAbsentUpdatedBy']);
     }
+    function canUpdateOwnRoster(cellId) {
+      return canEditOwnAttendance()
+             && myCell() == cellId
+             && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['members', 'updatedAt']);
+    }
 
     match /users/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
@@ -52,7 +58,9 @@ service cloud.firestore {
     match /cells/{cellId} {
       allow read: if isAdmin() || (isApproved() && myCell() == cellId);
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || canUpdateOwnLongAbsence(cellId);
+      allow update: if isAdmin()
+                    || canUpdateOwnLongAbsence(cellId)
+                    || canUpdateOwnRoster(cellId);
     }
 
     match /attendance/{attendanceId} {
