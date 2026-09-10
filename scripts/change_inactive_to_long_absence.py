@@ -22,3 +22,5 @@ for path in FILES:
             raise SystemExit(f'{path}: pattern not found: {old[:70]}')
         s = s.replace(old, new, 1)
     path.write_text(s, encoding='utf-8')
+
+# trigger 2026-09-10
