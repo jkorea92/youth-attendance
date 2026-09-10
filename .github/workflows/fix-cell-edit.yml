@@ -1,0 +1,93 @@
+name: Fix cell edit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-cell-edit.yml'
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add edit-existing-cell flow
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files=['index.html','app-v4.html']
+          for name in files:
+              p=Path(name)
+              s=p.read_text(encoding='utf-8')
+              old='''<div class="card s4"><h3>새 셀 등록</h3><label>셀 이름</label><input id="cellName"><label>리더</label><input id="leader"><label>헬퍼</label><input id="helper"><label>셀원</label><textarea id="members" rows="7" placeholder="한 줄에 한 명"></textarea><button id="addCell" class="primary w100">셀 저장</button></div>'''
+              new='''<div class="card s4"><h3 id="cellFormTitle">새 셀 등록</h3><div id="cellEditHint" class="muted">새 셀을 만들거나, 오른쪽 등록된 셀의 수정 버튼을 눌러 기존 셀 명단을 변경하세요.</div><label>셀 이름</label><input id="cellName"><label>리더</label><input id="leader"><label>헬퍼</label><input id="helper"><label>셀원</label><textarea id="members" rows="7" placeholder="한 줄에 한 명"></textarea><button id="addCell" class="primary w100">새 셀 저장</button><button id="cancelCellEdit" class="soft w100 hidden">수정 취소</button></div>'''
+              if old not in s:
+                  raise SystemExit(f'form block not found in {name}')
+              s=s.replace(old,new,1)
+
+              old2='''function renderCells(){
+ const box=$("cellList");
+ if(!cells.length){box.innerHTML='<div class="muted">등록된 셀이 없습니다.</div>';return}
+ box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${isAdmin()?`<button class="danger" data-del="${esc(c.id)}">삭제</button>`:""}</div></div>`).join("");
+ box.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(confirm("삭제할까요?"))await deleteDoc(doc(db,"cells",b.dataset.del))});
+}'''
+              new2='''let editingCellId="";
+function resetCellForm(){
+ editingCellId="";
+ $("cellName").value=$("leader").value=$("helper").value=$("members").value="";
+ $("cellFormTitle").textContent="새 셀 등록";
+ $("addCell").textContent="새 셀 저장";
+ $("cancelCellEdit").classList.add("hidden");
+}
+function editCell(id){
+ const c=cells.find(x=>x.id===id);if(!c)return;
+ editingCellId=id;
+ $("cellName").value=c.name||"";
+ $("leader").value=c.leader||"";
+ $("helper").value=c.helper||"";
+ $("members").value=(Array.isArray(c.members)?c.members:[]).join("\\n");
+ $("cellFormTitle").textContent=`${c.name||"셀"} 수정`;
+ $("addCell").textContent="변경사항 저장";
+ $("cancelCellEdit").classList.remove("hidden");
+ $("cellName").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function renderCells(){
+ const box=$("cellList");
+ if(!cells.length){box.innerHTML='<div class="muted">등록된 셀이 없습니다.</div>';return}
+ box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${isAdmin()?`<div class="actions"><button class="soft" data-edit="${esc(c.id)}">수정</button><button class="danger" data-del="${esc(c.id)}">삭제</button></div>`:""}</div></div>`).join("");
+ box.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editCell(b.dataset.edit));
+ box.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(confirm("삭제할까요?")){await deleteDoc(doc(db,"cells",b.dataset.del));if(editingCellId===b.dataset.del)resetCellForm()}});
+}'''
+              if old2 not in s:
+                  raise SystemExit(f'renderCells block not found in {name}')
+              s=s.replace(old2,new2,1)
+
+              start=s.index('$("addCell").onclick=async()=>')
+              end=s.index('\n\nasync function syncUserToCell',start)
+              old3=s[start:end]
+              new3='''$("addCell").onclick=async()=>{
+ if(!isAdmin())return;
+ const name=$("cellName").value.trim();
+ if(!name)return alert("셀 이름을 입력해주세요.");
+ const members=$("members").value.split(/\\n|,/).map(x=>x.trim()).filter(Boolean);
+ const data={name,leader:$("leader").value.trim(),helper:$("helper").value.trim(),members,updatedAt:Date.now()};
+ try{
+  if(editingCellId){
+   await updateDoc(doc(db,"cells",editingCellId),data);
+   alert("기존 셀 명단이 수정되었습니다.");
+  }else{
+   await addDoc(collection(db,"cells"),{...data,longAbsentKeys:[],createdAt:Date.now()});
+   alert("새 셀이 등록되었습니다.");
+  }
+  resetCellForm();
+ }catch(e){console.error(e);alert("셀 저장 실패: "+(e.code||e.message||e))}
+};
+$("cancelCellEdit").onclick=resetCellForm;'''
+              s=s[:start]+new3+s[end:]
+              p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html app-v4.html
+          git commit -m 'Allow editing existing cell rosters' || exit 0
+          git push
