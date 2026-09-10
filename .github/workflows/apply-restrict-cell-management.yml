@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/restrict_cell_management.py'
+      - '.github/workflows/apply-restrict-cell-management.yml'
 jobs:
   patch:
     runs-on: ubuntu-latest
