@@ -88,7 +88,7 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 </div></section>
 
 <section id="cells" class="panel"><div class="grid">
-<div class="card s4"><h3 id="cellFormTitle">새 셀 등록</h3><div class="muted">셀원별로 예배+셀 / 예배만 / 셀만 / 출석관리 제외를 지정하고 비고를 기록할 수 있습니다.</div><label>셀 이름</label><input id="cellName"><label>리더</label><input id="leader"><label>헬퍼</label><input id="helper"><label>셀원</label><div id="memberEditor" class="member-editor"></div><button id="addMemberRow" class="soft w100" type="button">+ 셀원 추가</button><button id="addCell" class="primary w100">새 셀 저장</button><button id="cancelCellEdit" class="soft w100 hidden">수정 취소</button></div>
+<div class="card s4"><h3 id="cellFormTitle">새 셀 등록</h3><div class="muted">셀원별로 예배+셀 / 예배만 / 셀만 / 장기 결석을 지정하고 비고에 사유를 기록할 수 있습니다.</div><label>셀 이름</label><input id="cellName"><label>리더</label><input id="leader"><label>헬퍼</label><input id="helper"><label>셀원</label><div id="memberEditor" class="member-editor"></div><button id="addMemberRow" class="soft w100" type="button">+ 셀원 추가</button><button id="addCell" class="primary w100">새 셀 저장</button><button id="cancelCellEdit" class="soft w100 hidden">수정 취소</button></div>
 <div class="card" style="grid-column:span 8"><h3>등록된 셀</h3><div id="cellList"></div></div>
 </div></section>
 
@@ -119,12 +119,13 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&
 const roleLabel=r=>({admin:"관리자",leader:"셀 리더",helper:"헬퍼",member:"셀원",viewer:"조회 전용",pending:"승인 대기"}[r]||r||"-");
 const isAdmin=()=>profile?.role==="admin",canEdit=()=>["admin","leader","helper"].includes(profile?.role);
 
-const PARTICIPATIONS=["both","worship","cell","inactive"];
-const participationLabel=v=>({both:"예배+셀",worship:"예배만",cell:"셀만",inactive:"출석관리 제외"}[v]||"예배+셀");
+const PARTICIPATIONS=["both","worship","cell","long"];
+const participationLabel=v=>({both:"예배+셀",worship:"예배만",cell:"셀만",long:"장기 결석",inactive:"장기 결석"}[v]||"예배+셀");
 function normalizeMember(x){
  if(typeof x==="string")return{name:x.trim(),participation:"both",note:""};
  if(!x||typeof x!=="object")return{name:"",participation:"both",note:""};
- const participation=PARTICIPATIONS.includes(x.participation)?x.participation:"both";
+ const rawParticipation=x.participation==="inactive"?"long":x.participation;
+ const participation=PARTICIPATIONS.includes(rawParticipation)?rawParticipation:"both";
  return{name:String(x.name||"").trim(),participation,note:String(x.note||"").trim()};
 }
 function memberEntries(c){
@@ -153,7 +154,7 @@ const attId=(date,id)=>`${date}__${id}`;
 function knownLongSet(c){
  const raw=new Set(Array.isArray(c?.longAbsentKeys)?c.longAbsentKeys:[]);
  const valid=new Set();
- people(c).forEach((p,i)=>{const k=personKey(p,i);if(raw.has(k))valid.add(k)});
+ people(c).forEach((p,i)=>{const k=personKey(p,i);if(raw.has(k)||p.participation==="long")valid.add(k)});
  return valid;
 }
 
@@ -300,7 +301,7 @@ function renderAttendance(){
    tdPart.innerHTML=`<span class="part-badge">${participationLabel(p.participation)}</span>`;
    if(trackEnabled(p,"worship"))tdW.appendChild(statusButtons("worship",r.worship,!editable||isLong));else tdW.innerHTML='<span class="na">해당 없음</span>';
    if(trackEnabled(p,"cell"))tdC.appendChild(statusButtons("cell",r.cell,!editable||isLong));else tdC.innerHTML='<span class="na">해당 없음</span>';
-   const lb=document.createElement("button");lb.type="button";lb.className=`att x${isLong?" on":""}`;lb.textContent=isLong?"장기결석 해제":"장기결석";lb.dataset.long="1";lb.disabled=!editable;tdLong.appendChild(lb);
+   const managedLong=p.participation==="long";const lb=document.createElement("button");lb.type="button";lb.className=`att x${isLong?" on":""}`;lb.textContent=managedLong?"장기결석":(isLong?"장기결석 해제":"장기결석");lb.dataset.long="1";lb.disabled=!editable||managedLong;tdLong.appendChild(lb);
    tr.append(tdName,tdRole,tdPart,tdW,tdC,tdLong);frag.appendChild(tr);
   });body.appendChild(frag);
  }catch(e){console.error("renderAttendance",e);body.innerHTML='<tr><td colspan="6" class="error">셀 목록 표시 오류</td></tr>';$("attMsg").textContent="오류: "+(e?.message||e)}
