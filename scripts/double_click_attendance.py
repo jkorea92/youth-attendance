@@ -21,6 +21,31 @@ button:disabled{opacity:.52!important;cursor:not-allowed!important;transform:non
 @media(prefers-reduced-motion:reduce){button{transition:none!important}}
 '''
 
+long_group_css = '''
+/* long-absence-group-20260917 */
+#attBody .long-group-heading td{
+  padding:14px 12px 9px!important;
+  border-bottom:0!important;
+  background:transparent!important;
+}
+.long-group-label{
+  display:flex;align-items:center;gap:8px;width:100%;
+  padding:9px 12px;border:1px solid #d7cafa;border-radius:11px;
+  background:#f7f3ff;color:var(--purple);font-size:12px;font-weight:900;
+}
+.long-group-count{
+  display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;
+  padding:0 7px;border-radius:999px;background:var(--purple);color:#fff;font-size:11px;font-weight:900;
+}
+#attBody tr.longrow{background:#fcfaff}
+#attBody tr.longrow td{border-bottom-color:#eee8fb}
+@media(max-width:760px){
+  #attBody .long-group-heading{margin-top:16px!important;margin-bottom:6px!important;border:0!important;background:transparent!important;padding:0!important}
+  #attBody .long-group-heading td{display:block!important;padding:0!important}
+  .long-group-label{padding:10px 12px;font-size:13px}
+}
+'''
+
 for path in files:
     text = path.read_text(encoding='utf-8')
 
@@ -61,15 +86,20 @@ for path in files:
         text = text.replace(current_quick, simple_quick, 1)
 
     # Update the help text to explain both toggles.
-    text = text.replace(
-        '출석 버튼을 한 번 더 누르면 체크가 해제됩니다.',
-        '출석 버튼을 한 번 더 누르면 체크가 해제됩니다. 전체 출석도 한 번 더 누르면 전체 체크가 해제됩니다.',
-        1
-    )
+    if '전체 출석도 한 번 더 누르면 전체 체크가 해제됩니다.' not in text:
+        text = text.replace(
+            '출석 버튼을 한 번 더 누르면 체크가 해제됩니다.',
+            '출석 버튼을 한 번 더 누르면 체크가 해제됩니다. 전체 출석도 한 번 더 누르면 전체 체크가 해제됩니다.',
+            1
+        )
 
     # Global button interaction effects.
     if '/* button-feedback-20260917 */' not in text:
         text = text.replace('</style>', button_css + '\n</style>', 1)
+
+    # Visually separate and group long-absence members at the bottom of attendance.
+    if '/* long-absence-group-20260917 */' not in text:
+        text = text.replace('</style>', long_group_css + '\n</style>', 1)
 
     # Quick button selected-state feedback.
     old_update = '''function updateRowSummary(tr,p,isLong=false){
@@ -105,9 +135,9 @@ for path in files:
     helpers = helper_anchor + '''function allAttendancePresent(){
  const c=cells.find(x=>x.id===selectedCellId);if(!c)return false;
  const ppl=people(c);let eligible=0,all=true;
- document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{
+ document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>{
   if(tr.classList.contains("longrow"))return;
-  const p=ppl[i];if(!p)return;
+  const p=ppl[Number(tr.dataset.personIndex)];if(!p)return;
   const tracks=["worship","cell"].filter(t=>trackEnabled(p,t));
   tracks.forEach(t=>{eligible++;if((t==="worship"?tr.dataset.worship:tr.dataset.cellstate)!=="present")all=false});
  });
@@ -122,6 +152,34 @@ function syncAllPresentButton(){
     if 'function allAttendancePresent(){' not in text and helper_anchor in text:
         text = text.replace(helper_anchor, helpers, 1)
 
+    # Make existing allAttendancePresent safe when visual row order differs from roster order.
+    old_all_helper = '''function allAttendancePresent(){
+ const c=cells.find(x=>x.id===selectedCellId);if(!c)return false;
+ const ppl=people(c);let eligible=0,all=true;
+ document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{
+  if(tr.classList.contains("longrow"))return;
+  const p=ppl[i];if(!p)return;
+  const tracks=["worship","cell"].filter(t=>trackEnabled(p,t));
+  tracks.forEach(t=>{eligible++;if((t==="worship"?tr.dataset.worship:tr.dataset.cellstate)!=="present")all=false});
+ });
+ return eligible>0&&all;
+}
+'''
+    new_all_helper = '''function allAttendancePresent(){
+ const c=cells.find(x=>x.id===selectedCellId);if(!c)return false;
+ const ppl=people(c);let eligible=0,all=true;
+ document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>{
+  if(tr.classList.contains("longrow"))return;
+  const p=ppl[Number(tr.dataset.personIndex)];if(!p)return;
+  const tracks=["worship","cell"].filter(t=>trackEnabled(p,t));
+  tracks.forEach(t=>{eligible++;if((t==="worship"?tr.dataset.worship:tr.dataset.cellstate)!=="present")all=false});
+ });
+ return eligible>0&&all;
+}
+'''
+    if old_all_helper in text:
+        text = text.replace(old_all_helper, new_all_helper, 1)
+
     # Keep the top toggle in sync whenever attendance is rendered.
     text = text.replace(
         "if(!c){body.innerHTML='<tr><td colspan=\"6\">셀을 선택해주세요.</td></tr>';return}",
@@ -133,6 +191,27 @@ function syncAllPresentButton(){
         "if(!ppl.length){body.innerHTML='<tr><td colspan=\"6\">등록된 인원이 없습니다.</td></tr>';syncAllPresentButton();return}",
         1
     )
+
+    # Render regular attendees first, then put all long-absence members together under one heading.
+    old_render_start = '''  const frag=document.createDocumentFragment();
+  ppl.forEach((p,i)=>{
+   const k=personKey(p,i),r=normalizeRecord(rec[k]),isLong=ls.has(k),tr=document.createElement("tr");
+'''
+    new_render_start = '''  const frag=document.createDocumentFragment();
+  const ordered=ppl.map((p,i)=>({p,i,isLong:ls.has(personKey(p,i))})).sort((a,b)=>Number(a.isLong)-Number(b.isLong));
+  const longCount=ordered.filter(x=>x.isLong).length;let longHeadingAdded=false;
+  ordered.forEach(({p,i,isLong})=>{
+   if(isLong&&!longHeadingAdded){
+    const heading=document.createElement("tr");heading.className="long-group-heading";
+    const headingCell=document.createElement("td");headingCell.colSpan=6;
+    headingCell.innerHTML=`<div class="long-group-label"><span>장기결석자</span><span class="long-group-count">${longCount}</span></div>`;
+    heading.appendChild(headingCell);frag.appendChild(heading);longHeadingAdded=true;
+   }
+   const k=personKey(p,i),r=normalizeRecord(rec[k]),tr=document.createElement("tr");
+'''
+    if old_render_start in text:
+        text = text.replace(old_render_start, new_render_start, 1)
+
     text = text.replace('  });body.appendChild(frag);\n', '  });body.appendChild(frag);syncAllPresentButton();\n', 1)
 
     # Detail status toggles should also update the overall button state.
@@ -146,8 +225,8 @@ function syncAllPresentButton(){
     new_all = '''$("allPresent").onclick=()=>{
  if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;
  const ppl=people(c),clear=allAttendancePresent();
- document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{
-  if(tr.classList.contains("longrow"))return;const p=ppl[i];if(!p)return;
+ document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>{
+  if(tr.classList.contains("longrow"))return;const p=ppl[Number(tr.dataset.personIndex)];if(!p)return;
   ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,clear?"":"present")});
   updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");
  });
@@ -155,6 +234,20 @@ function syncAllPresentButton(){
 };'''
     if old_all in text:
         text = text.replace(old_all, new_all, 1)
+
+    # Make an already-toggle-enabled handler safe after long-absence rows are reordered.
+    old_current_all = '''$("allPresent").onclick=()=>{
+ if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;
+ const ppl=people(c),clear=allAttendancePresent();
+ document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{
+  if(tr.classList.contains("longrow"))return;const p=ppl[i];if(!p)return;
+  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,clear?"":"present")});
+  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");
+ });
+ syncAllPresentButton();
+};'''
+    if old_current_all in text:
+        text = text.replace(old_current_all, new_all, 1)
 
     # Preserve the requested auth behavior from the previous revision.
     text = text.replace('getAuth,setPersistence,inMemoryPersistence,','getAuth,setPersistence,browserSessionPersistence,')
