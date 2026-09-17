@@ -292,9 +292,7 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 
 
 /* attendance-clear-20260917 */
-#clearAllAtt{background:#f2f4f7;color:#475467}
 @media(max-width:760px){
-  #clearAllAtt{flex:1 1 100%;width:100%}
 }
 
 </style>
@@ -319,7 +317,7 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 </div></section>
 
 <section id="attend" class="panel"><div class="grid">
-<div class="card s12"><h3>출석 체크</h3><div class="muted" style="margin:-4px 0 12px">전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다. 출석 버튼을 빠르게 두 번 누르면 해당 체크가 해제됩니다.</div><div class="row"><div><label>날짜</label><input id="attDate" type="date"></div><div><label>셀</label><select id="attCell"><option value="">셀 선택</option></select></div></div><div class="actions" style="margin-top:12px"><button id="allPresent" class="green">전체 출석</button><button id="clearAllAtt" class="soft">전체 체크 해제</button><button id="saveAtt" class="primary">출석 저장</button></div><div id="attMsg" class="status"></div></div>
+<div class="card s12"><h3>출석 체크</h3><div class="muted" style="margin:-4px 0 12px">전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다. 출석 버튼을 빠르게 두 번 누르면 해당 체크가 해제됩니다. 출석 버튼을 빠르게 두 번 누르면 해당 체크가 해제됩니다.</div><div class="row"><div><label>날짜</label><input id="attDate" type="date"></div><div><label>셀</label><select id="attCell"><option value="">셀 선택</option></select></div></div><div class="actions" style="margin-top:12px"><button id="allPresent" class="green">전체 출석</button><button id="saveAtt" class="primary">출석 저장</button></div><div id="attMsg" class="status"></div></div>
 <div class="card s12"><div class="table"><table><thead><tr><th>이름</th><th>역할</th><th>참여 유형</th><th>빠른 체크 / 세부 수정</th><th>현재 상태</th><th>장기결석</th></tr></thead><tbody id="attBody"><tr><td colspan="6">셀을 선택해주세요.</td></tr></tbody></table></div></div>
 </div></section>
 
@@ -423,7 +421,7 @@ function applyPermissions(){
  const r=profile?.role||"pending";$("roleBadge").textContent=roleLabel(r);$("pending").classList.toggle("hidden",r!=="pending");$("tabs").classList.toggle("hidden",r==="pending");
  $("cellsTab").classList.toggle("hidden",!(isAdmin()||canEdit()));
  ["usersTab","dataTab"].forEach(id=>$(id).classList.toggle("hidden",!isAdmin()));
- $("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());$("clearAllAtt").classList.toggle("hidden",!canEdit());
+ $("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());
  if(r==="pending")document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
 }
 function startSync(){
@@ -636,7 +634,6 @@ $("attBody").addEventListener("click",async e=>{
  }
 });
 $("allPresent").onclick=()=>{if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;const ppl=people(c);document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{if(tr.classList.contains("longrow"))return;const p=ppl[i];["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"present")});updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open")})};
-$("clearAllAtt").onclick=()=>{if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;const ppl=people(c);document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{if(tr.classList.contains("longrow"))return;const p=ppl[i];["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"")});updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open")})};
 $("saveAtt").onclick=async()=>{
  const c=cells.find(x=>x.id===selectedCellId),date=$("attDate").value;if(!c||!date||!canEdit())return;
  const records={};document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>records[tr.dataset.k]=tr.classList.contains("longrow")?{worship:"",cell:""}:{worship:tr.dataset.worship||"",cell:tr.dataset.cellstate||""});
