@@ -261,7 +261,7 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 
 /* quick-attendance-20260917 */
 .quick-wrap{display:flex;flex-direction:column;gap:8px;min-width:220px}
-.quick-present{width:100%;background:#e9f8f0;color:var(--green);border:1px solid #bce5cf;padding:10px 12px}
+.quick-present{width:100%;background:#e9f8f0;color:var(--green);border:1px solid #bce5cf;padding:10px 12px;touch-action:manipulation}
 .quick-present:hover{filter:brightness(.98)}
 .att-detail{border:1px solid var(--line);border-radius:10px;background:#f8fafc;overflow:hidden}
 .att-detail>summary{cursor:pointer;list-style:none;padding:9px 11px;font-size:12px;font-weight:900;color:var(--p);text-align:center;user-select:none}
@@ -292,12 +292,9 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 
 
 /* attendance-clear-20260917 */
-.quick-clear{width:100%;background:#f2f4f7;color:#475467;border:1px solid #d0d5dd;padding:9px 12px}
-.quick-clear:hover{background:#eaecf0}
 #clearAllAtt{background:#f2f4f7;color:#475467}
 @media(max-width:760px){
   #clearAllAtt{flex:1 1 100%;width:100%}
-  #attBody .quick-clear{width:100%!important;min-width:0!important}
 }
 
 </style>
@@ -322,7 +319,7 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 </div></section>
 
 <section id="attend" class="panel"><div class="grid">
-<div class="card s12"><h3>출석 체크</h3><div class="muted" style="margin:-4px 0 12px">전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다.</div><div class="row"><div><label>날짜</label><input id="attDate" type="date"></div><div><label>셀</label><select id="attCell"><option value="">셀 선택</option></select></div></div><div class="actions" style="margin-top:12px"><button id="allPresent" class="green">전체 출석</button><button id="clearAllAtt" class="soft">전체 체크 해제</button><button id="saveAtt" class="primary">출석 저장</button></div><div id="attMsg" class="status"></div></div>
+<div class="card s12"><h3>출석 체크</h3><div class="muted" style="margin:-4px 0 12px">전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다. 출석 버튼을 빠르게 두 번 누르면 해당 체크가 해제됩니다.</div><div class="row"><div><label>날짜</label><input id="attDate" type="date"></div><div><label>셀</label><select id="attCell"><option value="">셀 선택</option></select></div></div><div class="actions" style="margin-top:12px"><button id="allPresent" class="green">전체 출석</button><button id="clearAllAtt" class="soft">전체 체크 해제</button><button id="saveAtt" class="primary">출석 저장</button></div><div id="attMsg" class="status"></div></div>
 <div class="card s12"><div class="table"><table><thead><tr><th>이름</th><th>역할</th><th>참여 유형</th><th>빠른 체크 / 세부 수정</th><th>현재 상태</th><th>장기결석</th></tr></thead><tbody id="attBody"><tr><td colspan="6">셀을 선택해주세요.</td></tr></tbody></table></div></div>
 </div></section>
 
@@ -578,7 +575,7 @@ function setTrackState(tr,track,state){
 function quickButtonLabel(p){
  if(p.participation==="worship")return"✓ 예배 출석";
  if(p.participation==="cell")return"✓ 셀 모임 출석";
- return"✓ 둘 다 출석";
+ return"✓ 출석";
 }
 function renderAttendance(){
  const body=$("attBody"),c=cells.find(x=>x.id===selectedCellId),date=$("attDate").value;
@@ -597,7 +594,6 @@ function renderAttendance(){
    const quickWrap=document.createElement("div");quickWrap.className="quick-wrap";
    if(!isLong&&p.participation!=="long"){
     const qb=document.createElement("button");qb.type="button";qb.className="quick-present";qb.textContent=quickButtonLabel(p);qb.dataset.quick="present";qb.disabled=!editable;quickWrap.appendChild(qb);
-    const cb=document.createElement("button");cb.type="button";cb.className="quick-clear";cb.textContent="체크 해제";cb.dataset.clear="1";cb.disabled=!editable;quickWrap.appendChild(cb);
     const details=document.createElement("details");details.className="att-detail";
     const summary=document.createElement("summary");summary.textContent="세부 수정";details.appendChild(summary);
     const tracks=document.createElement("div");tracks.className="detail-tracks";
@@ -622,11 +618,9 @@ $("attBody").addEventListener("click",async e=>{
  const tr=b.closest("tr[data-k]");if(!tr)return;
  const c=cells.find(x=>x.id===tr.dataset.cell),p=c?people(c)[Number(tr.dataset.personIndex)]:null;if(!p)return;
  if(b.dataset.quick){
-  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"present")});
-  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;
- }
- if(b.dataset.clear){
-  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"")});
+  const now=Date.now(),last=Number(b.dataset.lastQuickTap||0),isDouble=now-last<360;
+  b.dataset.lastQuickTap=isDouble?"0":String(now);
+  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,isDouble?"":"present")});
   updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;
  }
  if(b.dataset.state&&b.dataset.track){
