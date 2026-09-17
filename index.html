@@ -313,6 +313,30 @@ button:disabled{opacity:.52!important;cursor:not-allowed!important;transform:non
 .tab.active{transform:translateY(0)}
 @media(prefers-reduced-motion:reduce){button{transition:none!important}}
 
+
+/* long-absence-group-20260917 */
+#attBody .long-group-heading td{
+  padding:14px 12px 9px!important;
+  border-bottom:0!important;
+  background:transparent!important;
+}
+.long-group-label{
+  display:flex;align-items:center;gap:8px;width:100%;
+  padding:9px 12px;border:1px solid #d7cafa;border-radius:11px;
+  background:#f7f3ff;color:var(--purple);font-size:12px;font-weight:900;
+}
+.long-group-count{
+  display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;
+  padding:0 7px;border-radius:999px;background:var(--purple);color:#fff;font-size:11px;font-weight:900;
+}
+#attBody tr.longrow{background:#fcfaff}
+#attBody tr.longrow td{border-bottom-color:#eee8fb}
+@media(max-width:760px){
+  #attBody .long-group-heading{margin-top:16px!important;margin-bottom:6px!important;border:0!important;background:transparent!important;padding:0!important}
+  #attBody .long-group-heading td{display:block!important;padding:0!important}
+  .long-group-label{padding:10px 12px;font-size:13px}
+}
+
 </style>
 </head>
 <body>
@@ -621,9 +645,9 @@ function quickButtonLabel(p){
 function allAttendancePresent(){
  const c=cells.find(x=>x.id===selectedCellId);if(!c)return false;
  const ppl=people(c);let eligible=0,all=true;
- document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{
+ document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>{
   if(tr.classList.contains("longrow"))return;
-  const p=ppl[i];if(!p)return;
+  const p=ppl[Number(tr.dataset.personIndex)];if(!p)return;
   const tracks=["worship","cell"].filter(t=>trackEnabled(p,t));
   tracks.forEach(t=>{eligible++;if((t==="worship"?tr.dataset.worship:tr.dataset.cellstate)!=="present")all=false});
  });
@@ -642,8 +666,16 @@ function renderAttendance(){
   body.innerHTML="";
   if(!ppl.length){body.innerHTML='<tr><td colspan="6">등록된 인원이 없습니다.</td></tr>';syncAllPresentButton();return}
   const frag=document.createDocumentFragment();
-  ppl.forEach((p,i)=>{
-   const k=personKey(p,i),r=normalizeRecord(rec[k]),isLong=ls.has(k),tr=document.createElement("tr");
+  const ordered=ppl.map((p,i)=>({p,i,isLong:ls.has(personKey(p,i))})).sort((a,b)=>Number(a.isLong)-Number(b.isLong));
+  const longCount=ordered.filter(x=>x.isLong).length;let longHeadingAdded=false;
+  ordered.forEach(({p,i,isLong})=>{
+   if(isLong&&!longHeadingAdded){
+    const heading=document.createElement("tr");heading.className="long-group-heading";
+    const headingCell=document.createElement("td");headingCell.colSpan=6;
+    headingCell.innerHTML=`<div class="long-group-label"><span>장기결석자</span><span class="long-group-count">${longCount}</span></div>`;
+    heading.appendChild(headingCell);frag.appendChild(heading);longHeadingAdded=true;
+   }
+   const k=personKey(p,i),r=normalizeRecord(rec[k]),tr=document.createElement("tr");
    tr.dataset.k=k;tr.dataset.personIndex=String(i);tr.dataset.worship=isLong?"":r.worship;tr.dataset.cellstate=isLong?"":r.cell;tr.dataset.cell=c.id;if(isLong)tr.className="longrow";
    const tdName=document.createElement("td"),tdRole=document.createElement("td"),tdPart=document.createElement("td"),tdQuick=document.createElement("td"),tdStatus=document.createElement("td"),tdLong=document.createElement("td");
    const strong=document.createElement("b");strong.textContent=p.name;tdName.appendChild(strong);tdRole.textContent=p.role;
@@ -695,8 +727,8 @@ $("attBody").addEventListener("click",async e=>{
 $("allPresent").onclick=()=>{
  if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;
  const ppl=people(c),clear=allAttendancePresent();
- document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{
-  if(tr.classList.contains("longrow"))return;const p=ppl[i];if(!p)return;
+ document.querySelectorAll("#attBody tr[data-k]").forEach(tr=>{
+  if(tr.classList.contains("longrow"))return;const p=ppl[Number(tr.dataset.personIndex)];if(!p)return;
   ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,clear?"":"present")});
   updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");
  });
