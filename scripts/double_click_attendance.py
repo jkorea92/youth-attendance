@@ -1,56 +1,54 @@
 from pathlib import Path
+import re
 
 files = [Path('index.html'), Path('app-v4.html')]
 for path in files:
     text = path.read_text(encoding='utf-8')
 
-    text = text.replace(
-        '전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다.',
-        '전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다. 출석 버튼을 빠르게 두 번 누르면 해당 체크가 해제됩니다.'
+    # Keep the quick-attendance instruction concise and remove the previous double-tap wording.
+    text = re.sub(
+        r'전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다\.(?: 출석 버튼을 빠르게 두 번 누르면 해당 체크가 해제됩니다\.)*',
+        '전체 출석을 먼저 적용한 뒤, 지각·결석 등 예외 인원만 세부 수정하면 빠르게 체크할 수 있습니다. 출석 버튼을 한 번 더 누르면 체크가 해제됩니다.',
+        text
     )
 
     text = text.replace('return"✓ 둘 다 출석";', 'return"✓ 출석";')
 
-    clear_button = '    const cb=document.createElement("button");cb.type="button";cb.className="quick-clear";cb.textContent="체크 해제";cb.dataset.clear="1";cb.disabled=!editable;quickWrap.appendChild(cb);\n'
-    text = text.replace(clear_button, '')
-
-    old_click = '''if(b.dataset.quick){
-  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"present")});
-  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;
- }
- if(b.dataset.clear){
-  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"")});
-  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;
- }
-'''
-    new_click = '''if(b.dataset.quick){
+    # A single tap now toggles the quick attendance state. If all enabled tracks are
+    # already present, the next tap clears them; otherwise it marks them present.
+    old_double = '''if(b.dataset.quick){
   const now=Date.now(),last=Number(b.dataset.lastQuickTap||0),isDouble=now-last<360;
   b.dataset.lastQuickTap=isDouble?"0":String(now);
   ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,isDouble?"":"present")});
   updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;
  }
 '''
-    if old_click in text:
-        text = text.replace(old_click, new_click, 1)
-    elif 'lastQuickTap' not in text:
-        raise SystemExit(f'Could not find quick click block in {path}')
+    new_toggle = '''if(b.dataset.quick){
+  const enabled=["worship","cell"].filter(track=>trackEnabled(p,track));
+  const alreadyPresent=enabled.length>0&&enabled.every(track=>(track==="worship"?tr.dataset.worship:tr.dataset.cellstate)==="present");
+  enabled.forEach(track=>setTrackState(tr,track,alreadyPresent?"":"present"));
+  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;
+ }
+'''
+    if old_double in text:
+        text = text.replace(old_double, new_toggle, 1)
+    elif 'const alreadyPresent=enabled.length>0' not in text:
+        raise SystemExit(f'Could not find quick attendance block in {path}')
 
-    text = text.replace('<button id="clearAllAtt" class="soft">전체 체크 해제</button>', '')
-    text = text.replace('$("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());$("clearAllAtt").classList.toggle("hidden",!canEdit());',
-                        '$("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());')
+    # Firebase Auth should live only in page memory. Navigating away, closing the tab,
+    # or refreshing destroys the session so returning through the link requires login.
+    old_import = 'import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";'
+    new_import = 'import{getAuth,setPersistence,inMemoryPersistence,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";'
+    if 'inMemoryPersistence' not in text:
+        if old_import not in text:
+            raise SystemExit(f'Could not find Firebase Auth import in {path}')
+        text = text.replace(old_import, new_import, 1)
 
-    clear_all_handler = '$("clearAllAtt").onclick=()=>{if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;const ppl=people(c);document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{if(tr.classList.contains("longrow"))return;const p=ppl[i];["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"")});updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open")})};\n'
-    text = text.replace(clear_all_handler, '')
-
-    text = text.replace('  #attBody .quick-clear{width:100%!important;min-width:0!important}\n', '')
-    text = text.replace('.quick-clear{width:100%;background:#f2f4f7;color:#475467;border:1px solid #d0d5dd;padding:9px 12px}\n.quick-clear:hover{background:#eaecf0}\n', '')
-    text = text.replace('#clearAllAtt{background:#f2f4f7;color:#475467}\n', '')
-    text = text.replace('  #clearAllAtt{flex:1 1 100%;width:100%}\n', '')
-
-    if 'touch-action:manipulation' not in text:
-        text = text.replace(
-            '.quick-present{width:100%;background:#e9f8f0;color:var(--green);border:1px solid #bce5cf;padding:10px 12px}',
-            '.quick-present{width:100%;background:#e9f8f0;color:var(--green);border:1px solid #bce5cf;padding:10px 12px;touch-action:manipulation}'
-        )
+    auth_init = 'const fb=initializeApp(firebaseConfig),auth=getAuth(fb),db=getFirestore(fb),$=id=>document.getElementById(id);'
+    persistence_init = auth_init + '\ntry{await setPersistence(auth,inMemoryPersistence)}catch(e){console.error("auth persistence",e)}'
+    if 'setPersistence(auth,inMemoryPersistence)' not in text:
+        if auth_init not in text:
+            raise SystemExit(f'Could not find Firebase auth initialization in {path}')
+        text = text.replace(auth_init, persistence_init, 1)
 
     path.write_text(text, encoding='utf-8')
