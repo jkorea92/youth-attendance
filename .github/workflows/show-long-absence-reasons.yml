@@ -1,0 +1,29 @@
+name: Show long absence reasons
+
+on:
+  push:
+    paths:
+      - '.github/workflows/show-long-absence-reasons.yml'
+      - 'scripts/show_long_absence_reasons.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply long absence reason display
+        run: python3 scripts/show_long_absence_reasons.py
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html app-v4.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Show long absence reasons in attendance and dashboard"
+            git push
+          fi
