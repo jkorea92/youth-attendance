@@ -35,8 +35,17 @@ for path in files:
     elif 'lastQuickTap' not in text:
         raise SystemExit(f'Could not find quick click block in {path}')
 
+    text = text.replace('<button id="clearAllAtt" class="soft">전체 체크 해제</button>', '')
+    text = text.replace('$("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());$("clearAllAtt").classList.toggle("hidden",!canEdit());',
+                        '$("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());')
+
+    clear_all_handler = '$("clearAllAtt").onclick=()=>{if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;const ppl=people(c);document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{if(tr.classList.contains("longrow"))return;const p=ppl[i];["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"")});updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open")})};\n'
+    text = text.replace(clear_all_handler, '')
+
     text = text.replace('  #attBody .quick-clear{width:100%!important;min-width:0!important}\n', '')
     text = text.replace('.quick-clear{width:100%;background:#f2f4f7;color:#475467;border:1px solid #d0d5dd;padding:9px 12px}\n.quick-clear:hover{background:#eaecf0}\n', '')
+    text = text.replace('#clearAllAtt{background:#f2f4f7;color:#475467}\n', '')
+    text = text.replace('  #clearAllAtt{flex:1 1 100%;width:100%}\n', '')
 
     if 'touch-action:manipulation' not in text:
         text = text.replace(
