@@ -1,0 +1,54 @@
+from pathlib import Path
+
+files = [Path('index.html'), Path('app-v4.html')]
+css_marker = '/* attendance-clear-20260917 */'
+css = '''
+
+/* attendance-clear-20260917 */
+.quick-clear{width:100%;background:#f2f4f7;color:#475467;border:1px solid #d0d5dd;padding:9px 12px}
+.quick-clear:hover{background:#eaecf0}
+#clearAllAtt{background:#f2f4f7;color:#475467}
+@media(max-width:760px){
+  #clearAllAtt{flex:1 1 100%;width:100%}
+  #attBody .quick-clear{width:100%!important;min-width:0!important}
+}
+'''
+
+for path in files:
+    text = path.read_text(encoding='utf-8')
+
+    if css_marker not in text:
+        text = text.replace('</style>', css + '\n</style>', 1)
+
+    old_actions = '<button id="allPresent" class="green">전체 출석</button><button id="saveAtt" class="primary">출석 저장</button>'
+    new_actions = '<button id="allPresent" class="green">전체 출석</button><button id="clearAllAtt" class="soft">전체 체크 해제</button><button id="saveAtt" class="primary">출석 저장</button>'
+    if old_actions in text:
+        text = text.replace(old_actions, new_actions, 1)
+
+    old_perm = '$("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());'
+    new_perm = '$("saveAtt").classList.toggle("hidden",!canEdit());$("allPresent").classList.toggle("hidden",!canEdit());$("clearAllAtt").classList.toggle("hidden",!canEdit());'
+    if old_perm in text:
+        text = text.replace(old_perm, new_perm, 1)
+
+    old_quick = 'const qb=document.createElement("button");qb.type="button";qb.className="quick-present";qb.textContent=quickButtonLabel(p);qb.dataset.quick="present";qb.disabled=!editable;quickWrap.appendChild(qb);\n    const details=document.createElement("details");'
+    new_quick = 'const qb=document.createElement("button");qb.type="button";qb.className="quick-present";qb.textContent=quickButtonLabel(p);qb.dataset.quick="present";qb.disabled=!editable;quickWrap.appendChild(qb);\n    const cb=document.createElement("button");cb.type="button";cb.className="quick-clear";cb.textContent="체크 해제";cb.dataset.clear="1";cb.disabled=!editable;quickWrap.appendChild(cb);\n    const details=document.createElement("details");'
+    if old_quick in text:
+        text = text.replace(old_quick, new_quick, 1)
+    elif 'cb.dataset.clear="1"' not in text:
+        raise SystemExit(f'Could not find quick button insertion point in {path}')
+
+    old_click = 'if(b.dataset.quick){\n  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"present")});\n  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;\n }\n if(b.dataset.state&&b.dataset.track){'
+    new_click = 'if(b.dataset.quick){\n  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"present")});\n  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;\n }\n if(b.dataset.clear){\n  ["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"")});\n  updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open");return;\n }\n if(b.dataset.state&&b.dataset.track){'
+    if old_click in text:
+        text = text.replace(old_click, new_click, 1)
+    elif 'if(b.dataset.clear)' not in text:
+        raise SystemExit(f'Could not find click handler insertion point in {path}')
+
+    all_present = '$("allPresent").onclick=()=>{if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;const ppl=people(c);document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{if(tr.classList.contains("longrow"))return;const p=ppl[i];["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"present")});updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open")})};'
+    clear_all = '\n$("clearAllAtt").onclick=()=>{if(!canEdit())return;const c=cells.find(x=>x.id===selectedCellId);if(!c)return;const ppl=people(c);document.querySelectorAll("#attBody tr[data-k]").forEach((tr,i)=>{if(tr.classList.contains("longrow"))return;const p=ppl[i];["worship","cell"].forEach(track=>{if(trackEnabled(p,track))setTrackState(tr,track,"")});updateRowSummary(tr,p,false);tr.querySelector(".att-detail")?.removeAttribute("open")})};'
+    if '$("clearAllAtt").onclick=' not in text:
+        if all_present not in text:
+            raise SystemExit(f'Could not find allPresent handler in {path}')
+        text = text.replace(all_present, all_present + clear_all, 1)
+
+    path.write_text(text, encoding='utf-8')
