@@ -332,7 +332,7 @@ button,.att,.tab,.badge,.metric,.name-chip,th,label{
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import{getAuth,setPersistence,inMemoryPersistence,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import{getAuth,setPersistence,browserSessionPersistence,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import{getFirestore,collection,addDoc,doc,updateDoc,deleteDoc,setDoc,getDoc,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -345,7 +345,25 @@ const firebaseConfig={
 };
 const OWNER="jaehokorea92@gmail.com";
 const fb=initializeApp(firebaseConfig),auth=getAuth(fb),db=getFirestore(fb),$=id=>document.getElementById(id);
-try{await setPersistence(auth,inMemoryPersistence)}catch(e){console.error("auth persistence",e)}
+try{
+ await setPersistence(auth,browserSessionPersistence);
+ const navType=performance.getEntriesByType("navigation")[0]?.type||"navigate";
+ const leftBefore=sessionStorage.getItem("youthAttendanceLeft")==="1";
+ if(leftBefore&&navType!=="reload")await signOut(auth);
+ sessionStorage.removeItem("youthAttendanceLeft");
+}catch(e){console.error("auth persistence",e)}
+window.addEventListener("pagehide",()=>{
+ try{sessionStorage.setItem("youthAttendanceLeft","1")}catch{}
+});
+window.addEventListener("pageshow",e=>{
+ if(!e.persisted)return;
+ try{
+  if(sessionStorage.getItem("youthAttendanceLeft")==="1"){
+   sessionStorage.removeItem("youthAttendanceLeft");
+   signOut(auth);
+  }
+ }catch{}
+});
 let currentUser=null,profile=null,cells=[],attendance={},users=[],unsubs=[],selectedCellId="";
 
 const today=()=>{const d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)};
