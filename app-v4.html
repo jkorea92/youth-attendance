@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="20261007-home-photos">
+<meta name="app-version" content="20261007-management-photos">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <meta name="theme-color" content="#f5f8fd">
@@ -37,7 +37,6 @@ header{background:#ffffffb8;border-bottom:1px solid #e9eef6;padding:20px 0}.top{
 }
 
 .photo-editor{display:flex;flex-wrap:wrap;align-items:center;gap:8px;grid-column:1/-1;margin:8px 0}.photo-editor input{width:100%;font-size:13px}.photo-editor .avatar{width:56px;height:56px}.avatar{overflow:hidden;vertical-align:middle}.avatar img{width:100%;height:100%;object-fit:cover}.photo-status{width:100%;font-size:12px;color:var(--muted)}
-.home-roster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}.home-person{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 5px;min-width:0;background:#f8faff;border-radius:12px;text-align:center}.home-person .avatar{width:56px;height:56px;margin:0;font-size:20px}.home-person-name{font-size:12px;font-weight:700;overflow-wrap:anywhere;max-width:100%}.home-person-role{font-size:10px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -451,7 +450,7 @@ function renderAttendance(){
    const k=personKey(p,i),r=normalizeRecord(rec[k]),tr=document.createElement("tr");
    tr.dataset.k=k;tr.dataset.personIndex=String(i);tr.dataset.worship=isLong?"":r.worship;tr.dataset.cellstate=isLong?"":r.cell;tr.dataset.cell=c.id;if(isLong)tr.className="longrow";
    const tdName=document.createElement("td"),tdRole=document.createElement("td"),tdPart=document.createElement("td"),tdQuick=document.createElement("td"),tdStatus=document.createElement("td"),tdLong=document.createElement("td");
-   const avatar=document.createElement("span");avatar.className="avatar";avatar.innerHTML=avatarContent(p);avatar.setAttribute("aria-hidden","true");tdName.appendChild(avatar);const strong=document.createElement("b");strong.textContent=p.name;tdName.appendChild(strong);tdRole.textContent=p.role;
+   const avatar=document.createElement("span");avatar.className="avatar";avatar.textContent=p.name.slice(0,1);avatar.setAttribute("aria-hidden","true");tdName.appendChild(avatar);const strong=document.createElement("b");strong.textContent=p.name;tdName.appendChild(strong);tdRole.textContent=p.role;
    tdPart.innerHTML=`<span class="part-badge">${participationLabel(p.participation)}</span>`;
    const quickWrap=document.createElement("div");quickWrap.className="quick-wrap";
    if(!isLong&&p.participation!=="long"){
@@ -540,9 +539,6 @@ function longReasonCards(list){
  return list.length?`<div class="long-reason-list">${list.map(x=>`<div class="long-reason-card"><div class="long-reason-name">${esc(x.name)}</div><div class="long-reason-text ${x.reason?"":"long-reason-empty"}">${x.reason?`사유: ${esc(x.reason)}`:"사유 미입력"}</div></div>`).join("")}</div>`:'<span class="roster-empty">없음</span>'
 }
 function statusGroups(s){return `<div class="roster-grid"><div class="roster-group"><div class="roster-title p">출석 ${s.p}</div><div class="name-list">${nameChips(s.names.present)}</div></div><div class="roster-group"><div class="roster-title l">지각 ${s.l}</div><div class="name-list">${nameChips(s.names.late)}</div></div><div class="roster-group"><div class="roster-title a">결석 ${s.a}</div><div class="name-list">${nameChips(s.names.absent)}</div></div><div class="roster-group"><div class="roster-title m">미체크 ${s.m}</div><div class="name-list">${nameChips(s.names.missing)}</div></div></div>`}
-function homeRoster(c){
- const list=people(c);return list.length?`<div class="home-roster" aria-label="셀 구성원 프로필">${list.map(p=>`<div class="home-person">${avatarHtml(p)}<span class="home-person-name">${esc(p.name)}</span><span class="home-person-role">${esc(p.role)}</span></div>`).join("")}</div>`:'<div class="muted">등록된 구성원이 없습니다.</div>';
-}
 function renderDash(){
  const date=$("dashDate").value||today();$("nPeople").textContent=cells.reduce((n,c)=>n+people(c).length,0);$("nCells").textContent=cells.length;
  let WP=0,WE=0,CP=0,CE=0;cells.forEach(c=>{const s=cellStatus(c,date);WP+=s.worship.p;WE+=s.worship.eligible;CP+=s.cell.p;CE+=s.cell.eligible});
@@ -556,7 +552,7 @@ function renderDash(){
  const longList=cells.flatMap(c=>cellStatus(c,date).longDetails.map(x=>({...x,name:`${x.name} · ${c.name}`})));
  $("nLong").textContent=longList.length;$("longTotal").textContent=`(${longList.length}명)`;
  $("longOverview").innerHTML=longReasonCards(longList);
- $("summary").innerHTML=cells.length?cells.map(c=>{const s=cellStatus(c,date);return `<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">전체 ${s.total}명 · 장기결석 ${s.long.length}명</div></div><div><b style="color:var(--p)">예배 ${s.worship.eligible?s.worship.rate+"%":"-"}</b><br><b style="color:var(--purple)">셀 ${s.cell.eligible?s.cell.rate+"%":"-"}</b></div></div><div class="metrics"><span class="metric mp">예배 출석 ${s.worship.p}/${s.worship.eligible}</span><span class="metric mp">셀 출석 ${s.cell.p}/${s.cell.eligible}</span><span class="metric mx">장기결석 ${s.long.length}</span></div>${homeRoster(c)}<details class="roster"><summary>예배 출석 명단</summary>${statusGroups(s.worship)}</details><details class="roster"><summary>셀 모임 출석 명단</summary>${statusGroups(s.cell)}</details>${s.long.length?`<div class="status-section"><div class="status-section-title">장기결석 · 사유</div>${longReasonCards(s.longDetails||[])}</div>`:""}</div>`}).join(""):'<div class="muted">표시할 셀이 없습니다.</div>';
+ $("summary").innerHTML=cells.length?cells.map(c=>{const s=cellStatus(c,date);return `<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">전체 ${s.total}명 · 장기결석 ${s.long.length}명</div></div><div><b style="color:var(--p)">예배 ${s.worship.eligible?s.worship.rate+"%":"-"}</b><br><b style="color:var(--purple)">셀 ${s.cell.eligible?s.cell.rate+"%":"-"}</b></div></div><div class="metrics"><span class="metric mp">예배 출석 ${s.worship.p}/${s.worship.eligible}</span><span class="metric mp">셀 출석 ${s.cell.p}/${s.cell.eligible}</span><span class="metric mx">장기결석 ${s.long.length}</span></div><details class="roster"><summary>예배 출석 명단</summary>${statusGroups(s.worship)}</details><details class="roster"><summary>셀 모임 출석 명단</summary>${statusGroups(s.cell)}</details>${s.long.length?`<div class="status-section"><div class="status-section-title">장기결석 · 사유</div>${longReasonCards(s.longDetails||[])}</div>`:""}</div>`}).join(""):'<div class="muted">표시할 셀이 없습니다.</div>';
 }
 
 $("addCell").onclick=async()=>{
