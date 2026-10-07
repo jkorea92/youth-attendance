@@ -63,7 +63,7 @@ header{background:#ffffffb8;border-bottom:1px solid #e9eef6;padding:20px 0}.top{
 </div></section>
 
 <section id="cells" class="panel"><div class="page-intro"><h2>셀 관리</h2><p>셀의 멤버 정보와 참여 상태, 비고와 사유를 관리합니다.</p></div><div class="grid">
-<div class="card s4"><h3 id="cellFormTitle">새 셀 등록</h3><div class="muted">셀원별로 예배+셀 / 예배만 / 셀만 / 장기 결석을 지정하고 비고에 사유를 기록할 수 있습니다.</div><label>셀 이름</label><input id="cellName"><label>리더</label><input id="leader"><div id="leaderPhotoEditor"></div><label for="helper">헬퍼 (선택)</label><input id="helper" placeholder="헬퍼 이름"><div id="helperPhotoEditor"></div><label>셀원</label><div id="memberEditor" class="member-editor"></div><button id="addMemberRow" class="soft w100" type="button">+ 셀원 추가</button><button id="addCell" class="primary w100">새 셀 저장</button><button id="cancelCellEdit" class="soft w100 hidden">수정 취소</button></div>
+<div class="card s4"><h3 id="cellFormTitle">새 셀 등록</h3><div class="muted">셀원별로 예배+셀 / 예배만 / 셀만 / 장기 결석을 지정하고 비고에 사유를 기록할 수 있습니다.</div><label>셀 이름</label><input id="cellName"><label>리더</label><input id="leader"><div id="leaderPhotoEditor"></div><label>헬퍼 (여러 명 등록 가능)</label><div id="helperEditor" class="member-editor"></div><button id="addHelperRow" class="soft w100" type="button">+ 헬퍼 추가</button><label>셀원</label><div id="memberEditor" class="member-editor"></div><button id="addMemberRow" class="soft w100" type="button">+ 셀원 추가</button><button id="addCell" class="primary w100">새 셀 저장</button><button id="cancelCellEdit" class="soft w100 hidden">수정 취소</button></div>
 <div class="card" style="grid-column:span 8"><h3>등록된 셀</h3><div id="cellList"></div></div>
 </div></section>
 
@@ -130,12 +130,22 @@ function memberEntries(c){
  return[];
 }
 function memberNames(c){return memberEntries(c).map(x=>x.name)}
+function helperEntries(c){
+ const list=Array.isArray(c?.helpers)?c.helpers:(c?.helper?[{name:c.helper,photo:c.helperPhoto}]:[]);
+ return list.map(normalizeMember).filter(x=>x.name);
+}
+function rosterKeys(c,next){
+ const keys={...(c?.personKeys||{})};
+ people(c||{}).forEach((p,i)=>{const identity=JSON.stringify([p.role,p.name]);keys[identity]=personKey(p,i)});
+ people({...next,personKeys:{}}).forEach(p=>{const identity=JSON.stringify([p.role,p.name]);if(!keys[identity])keys[identity]="person:"+crypto.randomUUID()});
+ return keys;
+}
 function people(c){
  const out=[];
  if(c?.leader)out.push({name:String(c.leader),photo:validPhoto(c.leaderPhoto),role:"리더",participation:"both",note:""});
- if(c?.helper)out.push({name:String(c.helper),photo:validPhoto(c.helperPhoto),role:"헬퍼",participation:"both",note:""});
+ helperEntries(c).forEach(h=>out.push({...h,role:"헬퍼",participation:"both"}));
  memberEntries(c).forEach(m=>out.push({...m,role:"셀원"}));
- return out;
+ return out.map(p=>({...p,attendanceKey:c?.personKeys?.[JSON.stringify([p.role,p.name])]||""}));
 }
 const trackEnabled=(p,track)=>p.participation==="both"||p.participation===track;
 function normalizeRecord(v){
@@ -143,7 +153,7 @@ function normalizeRecord(v){
  if(v&&typeof v==="object")return{worship:v.worship||"",cell:v.cell||""};
  return{worship:"",cell:""};
 }
-const personKey=(p,i)=>`${p.role}:${p.name}:${i}`;
+const personKey=(p,i)=>p.attendanceKey||`${p.role}:${p.name}:${i}`;
 const attId=(date,id)=>`${date}__${id}`;
 function knownLongSet(c){
  const raw=new Set(Array.isArray(c?.longAbsentKeys)?c.longAbsentKeys:[]);
@@ -246,7 +256,7 @@ function validPhoto(value){return typeof value==="string"&&value.length<=20000&&
 function avatarContent(person){const photo=validPhoto(person.photo);return photo?`<img src="${photo}" alt="">`:esc((person.name||"사진").slice(0,1))}
 function avatarHtml(person){return `<span class="avatar" aria-hidden="true">${avatarContent(person)}</span>`}
 function photoEditorHtml(photo="",disabled=false){return `<div class="photo-editor" data-photo="${validPhoto(photo)}">${avatarHtml({photo})}<input type="file" data-photo-file accept="image/jpeg,image/png,image/webp" aria-label="프로필 사진 선택" ${disabled?"disabled":""}><button type="button" class="soft" data-photo-remove ${disabled?"disabled":""}>사진 삭제</button><span class="photo-status" role="status">${disabled?"리더·헬퍼 사진은 관리자가 변경할 수 있습니다.":"JPG · PNG · WebP, 최대 10MB. 사진 선택 후 변경사항을 저장해주세요."}</span></div>`}
-function renderLeaderPhotos(c={}){["leader","helper"].forEach(role=>$(role+"PhotoEditor").innerHTML=photoEditorHtml(c[role+"Photo"],!isAdmin()))}
+function renderLeaderPhotos(c={}){["leader"].forEach(role=>$(role+"PhotoEditor").innerHTML=photoEditorHtml(c[role+"Photo"],!isAdmin()))}
 async function compressPhoto(file){
  if(!["image/jpeg","image/png","image/webp"].includes(file.type))throw Error("JPG, PNG 또는 WebP 사진을 선택해주세요.");
  if(file.size>10*1024*1024)throw Error("10MB 이하의 사진을 선택해주세요.");
@@ -267,6 +277,17 @@ $("cells").addEventListener("change",async e=>{
  finally{delete box.dataset.loading;input.disabled=false;box.querySelector("button").disabled=false;input.value=""}
 });
 $("cells").addEventListener("click",e=>{const button=e.target.closest("[data-photo-remove]");if(!button||button.disabled)return;const box=button.closest(".photo-editor");box.dataset.photo="";box.querySelector(".avatar").textContent="사진";box.querySelector(".photo-status").textContent="사진 삭제를 적용하려면 변경사항을 저장해주세요."});
+function helperRowHtml(h={}){
+ const x=normalizeMember(h);return `<div class="helper-row cell"><input data-helper-name aria-label="헬퍼 이름" placeholder="헬퍼 이름" value="${esc(x.name)}" ${isAdmin()?"":"disabled"}>${photoEditorHtml(x.photo,!isAdmin())}<button type="button" class="danger" data-helper-remove ${isAdmin()?"":"disabled"}>헬퍼 삭제</button></div>`;
+}
+function renderHelperEditor(c={}){
+ $("helperEditor").innerHTML=helperEntries(c).map(helperRowHtml).join("");$("addHelperRow").classList.toggle("hidden",!isAdmin());
+}
+function collectHelpers(){
+ return Array.from($("helperEditor").querySelectorAll(".helper-row")).map(row=>({name:row.querySelector("[data-helper-name]").value.trim(),photo:row.querySelector(".photo-editor").dataset.photo||""})).filter(x=>x.name);
+}
+$("addHelperRow").onclick=()=>{if(!isAdmin())return;$("helperEditor").insertAdjacentHTML("beforeend",helperRowHtml());$("helperEditor").lastElementChild.querySelector("input").focus()};
+$("helperEditor").addEventListener("click",e=>{const b=e.target.closest("[data-helper-remove]");if(b&&isAdmin())b.closest(".helper-row").remove()});
 let editingCellId="";
 function memberRowHtml(m={}){
  const x=normalizeMember(m),opts=PARTICIPATIONS.map(v=>`<option value="${v}" ${x.participation===v?"selected":""}>${participationLabel(v)}</option>`).join("");
@@ -289,10 +310,10 @@ $("addMemberRow").onclick=()=>$("memberEditor").insertAdjacentHTML("beforeend",m
 $("memberEditor").addEventListener("click",e=>{const b=e.target.closest("[data-member-remove]");if(b)b.closest(".member-row")?.remove()});
 function resetCellForm(){
  editingCellId="";
- $("cellName").value=$("leader").value=$("helper").value="";
+ $("cellName").value=$("leader").value="";renderHelperEditor();
  renderMemberEditor([]);
  renderLeaderPhotos();
- $("cellName").disabled=$("leader").disabled=$("helper").disabled=false;
+ $("cellName").disabled=$("leader").disabled=false;
  if(isAdmin()){
   $("cellFormTitle").textContent="새 셀 등록";
   $("addCell").textContent="새 셀 저장";
@@ -310,10 +331,10 @@ function editCell(id){
  editingCellId=id;
  $("cellName").value=c.name||"";
  $("leader").value=c.leader||"";
- $("helper").value=c.helper||"";
+ renderHelperEditor(c);
  renderMemberEditor(memberEntries(c));
  renderLeaderPhotos(c);
- $("cellName").disabled=$("leader").disabled=$("helper").disabled=!isAdmin();
+ $("cellName").disabled=$("leader").disabled=!isAdmin();
  $("cellFormTitle").textContent=isAdmin()?`${c.name||"셀"} 수정`:`${c.name||"셀"} 셀원 관리`;
  $("addCell").textContent=isAdmin()?"변경사항 저장":"셀원 명단 저장";
  $("addCell").classList.remove("hidden");
@@ -327,9 +348,9 @@ function memberSummary(c){
 function renderCells(){
  const box=$("cellList");
  if(!cells.length){box.innerHTML='<div class="muted">등록된 셀이 없습니다.</div>';return}
- box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(c.helper||"-")} · ${people(c).length}명</div></div>${(isAdmin()||canEdit())?`<div class="actions"><button class="soft" data-edit="${esc(c.id)}">${isAdmin()?"수정":"셀원 관리"}</button>${isAdmin()?`<button class="soft" data-add-helper="${esc(c.id)}">${c.helper?"헬퍼 변경":"+ 헬퍼 추가"}</button><button class="danger" data-del="${esc(c.id)}">삭제</button>`:""}</div>`:""}</div>${(isAdmin()||canEdit())?`<details class="roster"><summary>셀원 참여 유형 / 비고 보기</summary>${memberSummary(c)}</details>`:""}</div>`).join("");
+ box.innerHTML=cells.map(c=>`<div class="cell"><div class="celltop"><div><b>${esc(c.name)}</b><div class="muted">리더 ${esc(c.leader||"-")} · 헬퍼 ${esc(helperEntries(c).map(h=>h.name).join(", ")||"-")} · ${people(c).length}명</div></div>${(isAdmin()||canEdit())?`<div class="actions"><button class="soft" data-edit="${esc(c.id)}">${isAdmin()?"수정":"셀원 관리"}</button>${isAdmin()?`<button class="soft" data-add-helper="${esc(c.id)}">${helperEntries(c).length?"헬퍼 관리":"+ 헬퍼 추가"}</button><button class="danger" data-del="${esc(c.id)}">삭제</button>`:""}</div>`:""}</div>${(isAdmin()||canEdit())?`<details class="roster"><summary>셀원 참여 유형 / 비고 보기</summary>${memberSummary(c)}</details>`:""}</div>`).join("");
  box.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editCell(b.dataset.edit));
- box.querySelectorAll("[data-add-helper]").forEach(b=>b.onclick=()=>{editCell(b.dataset.addHelper);$("helper").scrollIntoView({block:"center",behavior:"smooth"});$("helper").focus()});
+ box.querySelectorAll("[data-add-helper]").forEach(b=>b.onclick=()=>{editCell(b.dataset.addHelper);$("helperEditor").scrollIntoView({block:"center",behavior:"smooth"});$("addHelperRow").click()});
  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(confirm("삭제할까요?")){await deleteDoc(doc(db,"cells",b.dataset.del));if(editingCellId===b.dataset.del)resetCellForm()}});
 }
 function renderCellSelect(){
@@ -536,15 +557,19 @@ function renderDash(){
 $("addCell").onclick=async()=>{
  if(document.querySelector('.photo-editor[data-loading="true"]'))return alert("사진 처리 후 저장해주세요.");
  const members=collectMembers();
- const leaderPhoto=$("leaderPhotoEditor").querySelector(".photo-editor")?.dataset.photo||"",helperPhoto=$("helperPhotoEditor").querySelector(".photo-editor")?.dataset.photo||"";
- if(new Blob([JSON.stringify({members,leaderPhoto,helperPhoto})]).size>700000)return alert("사진이 너무 많습니다. 일부 사진을 삭제한 뒤 저장해주세요.");
+ const leaderPhoto=$("leaderPhotoEditor").querySelector(".photo-editor")?.dataset.photo||"",helpers=collectHelpers();
+ if(new Blob([JSON.stringify({members,leaderPhoto,helpers})]).size>700000)return alert("사진이 너무 많습니다. 일부 사진을 삭제한 뒤 저장해주세요.");
  if(!isAdmin()){
   if(!canEdit()||!editingCellId||editingCellId!==profile?.cellId)return alert("자신의 셀원 명단만 수정할 수 있습니다.");
   try{await updateDoc(doc(db,"cells",editingCellId),{members,updatedAt:Date.now()});alert("셀원 참여 유형과 비고가 저장되었습니다.");resetCellForm()}
   catch(e){console.error(e);alert("셀원 저장 실패: "+(e.code||e.message||e))}return;
  }
  const cellName=$("cellName").value.trim();if(!cellName)return alert("셀 이름을 입력해주세요.");
- const data={name:cellName,leader:$("leader").value.trim(),helper:$("helper").value.trim(),leaderPhoto,helperPhoto,members,updatedAt:Date.now()};
+ const leader=$("leader").value.trim();
+ const names=[leader,...helpers.map(h=>h.name),...members.map(m=>m.name)].filter(Boolean).map(n=>n.toLowerCase());
+ if(new Set(names).size!==names.length)return alert("리더·헬퍼·셀원 이름이 중복됩니다. 같은 사람은 한 번만 등록해주세요.");
+ const data={name:cellName,leader,helpers,helper:helpers[0]?.name||"",leaderPhoto,helperPhoto:helpers[0]?.photo||"",members,updatedAt:Date.now()};
+ data.personKeys=rosterKeys(cells.find(c=>c.id===editingCellId),data);
  try{if(editingCellId){await updateDoc(doc(db,"cells",editingCellId),data);alert("기존 셀이 수정되었습니다.")}else{await addDoc(collection(db,"cells"),{...data,longAbsentKeys:[],createdAt:Date.now()});alert("새 셀이 등록되었습니다.")}resetCellForm()}
  catch(e){console.error(e);alert("셀 저장 실패: "+(e.code||e.message||e))}
 };
@@ -555,12 +580,14 @@ async function syncUserToCell(user,newRole,newCellId){
  const oldRole=user?.role||"pending",oldCellId=user?.cellId||"",touched=new Set([oldCellId,newCellId].filter(Boolean));
  for(const cellId of touched){
   const c=cells.find(x=>x.id===cellId);if(!c)continue;
-  let leader=String(c.leader||""),helper=String(c.helper||""),members=memberEntries(c);
+  let leader=String(c.leader||""),helpers=helperEntries(c),members=memberEntries(c);
+  const existingHelper=helpers.find(x=>x.name===name);
   const existingMember=members.find(x=>x.name===name);
-  if(cellId===oldCellId){if(oldRole==="leader"&&leader===name)leader="";if(oldRole==="helper"&&helper===name)helper="";if(oldRole==="member")members=members.filter(x=>x.name!==name)}
-  if(cellId===newCellId){members=members.filter(x=>x.name!==name);if(newRole==="leader")leader=name;else if(newRole==="helper")helper=name;else if(newRole==="member")members.push(existingMember||{name,participation:"both",note:"",photo:""})}
+  if(cellId===oldCellId){if(oldRole==="leader"&&leader===name)leader="";if(oldRole==="helper")helpers=helpers.filter(x=>x.name!==name);if(oldRole==="member")members=members.filter(x=>x.name!==name)}
+  if(cellId===newCellId){members=members.filter(x=>x.name!==name);if(newRole==="leader")leader=name;else if(newRole==="helper"){helpers=helpers.filter(x=>x.name!==name);helpers.push(existingHelper||{name,photo:""})}else if(newRole==="member")members.push(existingMember||{name,participation:"both",note:"",photo:""})}
   const seen=new Set(),dedup=members.filter(m=>{const k=m.name.toLowerCase();if(!m.name||seen.has(k))return false;seen.add(k);return true});
-  await updateDoc(doc(db,"cells",cellId),{leader,helper,members:dedup,updatedAt:Date.now()});
+  const next={leader,helpers,helper:helpers[0]?.name||"",helperPhoto:helpers[0]?.photo||"",members:dedup};
+  await updateDoc(doc(db,"cells",cellId),{...next,personKeys:rosterKeys(c,next),updatedAt:Date.now()});
  }
 }
 
